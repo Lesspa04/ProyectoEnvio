@@ -1,34 +1,35 @@
 package co.edu.unipiloto.proyectoenvio;
-
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
+
 import androidx.appcompat.app.AppCompatActivity;
 
 public class MainActivity extends AppCompatActivity {
 
-    EditText etCelularLogin, etPasswordLogin;
-    Button btnLogin, btnIrRegistro;
+    Button btnLogin, btnEnvio;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        etCelularLogin = findViewById(R.id.etCelularLogin);
-        etPasswordLogin = findViewById(R.id.etPasswordLogin);
-        btnLogin = findViewById(R.id.btnLogin);
-        btnIrRegistro = findViewById(R.id.btnIrRegistro);
+        btnLogin = findViewById(R.id.btnLoginRegister);
+        btnEnvio = findViewById(R.id.btnEnvio);
 
-        btnLogin.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, EnvioActivity.class);
-            startActivity(intent);
+        btnLogin.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, LoginRegisterActivity.class));
+            }
         });
 
-        btnIrRegistro.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, RegistroActivity.class);
-            startActivity(intent);
+        btnEnvio.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, EnvioActivity.class));
+            }
         });
     }
 }

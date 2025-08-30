@@ -20,7 +20,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".RegistroActivity"
+            android:name=".LoginRegisterActivity"
             android:exported="false" />
         <activity
             android:name=".EnvioActivity"
