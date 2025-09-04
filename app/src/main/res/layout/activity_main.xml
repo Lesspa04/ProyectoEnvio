@@ -18,6 +18,14 @@
         android:layout_height="wrap_content"
         android:text="Registro de Envío"
         android:layout_marginTop="20dp" />
+
+    <Button
+        android:id="@+id/btnRutas"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Asignación de Rutas"
+        android:layout_marginTop="20dp"/>
+
 </LinearLayout>
 
 

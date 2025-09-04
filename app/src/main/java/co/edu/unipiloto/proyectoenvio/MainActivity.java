@@ -8,7 +8,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 public class MainActivity extends AppCompatActivity {
 
-    Button btnLogin, btnEnvio;
+    Button btnLogin, btnEnvio, btnRutas;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,5 +31,14 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(new Intent(MainActivity.this, EnvioActivity.class));
             }
         });
+
+        btnRutas = findViewById(R.id.btnRutas);
+        btnRutas.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, RutasActivity.class));
+            }
+        });
+
     }
 }
