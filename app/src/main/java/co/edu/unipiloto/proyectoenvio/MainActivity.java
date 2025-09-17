@@ -1,4 +1,5 @@
 package co.edu.unipiloto.proyectoenvio;
+
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
@@ -8,7 +9,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 public class MainActivity extends AppCompatActivity {
 
-    Button btnLogin, btnEnvio, btnRutas;
+    Button btnLogin, btnEnvio, btnRutas, btnMisRecolecciones, btnPago, btnTracking;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -17,28 +18,27 @@ public class MainActivity extends AppCompatActivity {
 
         btnLogin = findViewById(R.id.btnLoginRegister);
         btnEnvio = findViewById(R.id.btnEnvio);
-
-        btnLogin.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(MainActivity.this, LoginRegisterActivity.class));
-            }
-        });
-
-        btnEnvio.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(MainActivity.this, EnvioActivity.class));
-            }
-        });
-
         btnRutas = findViewById(R.id.btnRutas);
-        btnRutas.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(MainActivity.this, RutasActivity.class));
-            }
-        });
+        btnMisRecolecciones = findViewById(R.id.btnMisRecolecciones);
+        btnPago = findViewById(R.id.btnPago);
+        btnTracking = findViewById(R.id.btnTracking);
 
+        btnLogin.setOnClickListener(v ->
+                startActivity(new Intent(MainActivity.this, LoginRegisterActivity.class)));
+
+        btnEnvio.setOnClickListener(v ->
+                startActivity(new Intent(MainActivity.this, EnvioActivity.class)));
+
+        btnRutas.setOnClickListener(v ->
+                startActivity(new Intent(MainActivity.this, RutasActivity.class)));
+
+        btnMisRecolecciones.setOnClickListener(v ->
+                startActivity(new Intent(MainActivity.this, MisRecoleccionesActivity.class)));
+
+        btnPago.setOnClickListener(v ->
+                startActivity(new Intent(MainActivity.this, PagoActivity.class)));
+
+        btnTracking.setOnClickListener(v ->
+                startActivity(new Intent(MainActivity.this, TrackingActivity.class)));
     }
 }

@@ -18,77 +18,96 @@ import androidx.core.content.ContextCompat;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Random;
 
 public class EnvioActivity extends AppCompatActivity {
 
-    EditText edtRemitente, edtDireccion, edtCelular;
+    EditText edtEmailRemitente, edtDestinatarioNombre, edtDestinatarioDireccion, edtDestinatarioCelular;
     Button btnRegistrarEnvio, btnDescargarPDF;
     TextView txtComprobante;
     String comprobanteTexto = "";
+
+    // Variables para guardar info del envío recién creado
+    long envioId = -1;
+    String trackingGenerado = "";
+    double precioEnvio = 0.0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_envio);
 
-        edtRemitente = findViewById(R.id.edtRemitente);
-        edtDireccion = findViewById(R.id.edtDireccion);
-        edtCelular = findViewById(R.id.edtCelularRemitente);
+        edtEmailRemitente = findViewById(R.id.edtEmailRemitente);
+        edtDestinatarioNombre = findViewById(R.id.edtDestinatarioNombre);
+        edtDestinatarioDireccion = findViewById(R.id.edtDestinatarioDireccion);
+        edtDestinatarioCelular = findViewById(R.id.edtDestinatarioCelular);
         btnRegistrarEnvio = findViewById(R.id.btnRegistrarEnvio);
         txtComprobante = findViewById(R.id.txtComprobante);
         btnDescargarPDF = findViewById(R.id.btnDescargarPDF);
 
-        btnRegistrarEnvio.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                validarEnvio();
-            }
-        });
-
-        btnDescargarPDF.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                generarPDF();
-            }
-        });
+        btnRegistrarEnvio.setOnClickListener(v -> registrarEnvio());
+        btnDescargarPDF.setOnClickListener(v -> generarPDF());
     }
 
-    private void validarEnvio() {
-        String nombre = edtRemitente.getText().toString().trim();
-        String direccion = edtDireccion.getText().toString().trim();
-        String celular = edtCelular.getText().toString().trim();
+    private void registrarEnvio() {
+        String emailRemitente = edtEmailRemitente.getText().toString().trim();
+        String nombreDestinatario = edtDestinatarioNombre.getText().toString().trim();
+        String direccionDestinatario = edtDestinatarioDireccion.getText().toString().trim();
+        String celularDestinatario = edtDestinatarioCelular.getText().toString().trim();
 
-        if (!nombre.matches("[a-zA-Z ]+")) {
-            Toast.makeText(this, "El nombre solo debe contener letras", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        if (direccion.isEmpty()) {
-            Toast.makeText(this, "Ingrese la dirección", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        if (!celular.matches("\\d{10}")) {
-            Toast.makeText(this, "Ingrese un celular válido (10 dígitos)", Toast.LENGTH_SHORT).show();
+        // Validar campos
+        if (emailRemitente.isEmpty() || nombreDestinatario.isEmpty() ||
+                direccionDestinatario.isEmpty() || celularDestinatario.isEmpty()) {
+            Toast.makeText(this, "Por favor complete todos los campos", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        int guia = new Random().nextInt(900000) + 100000;
+        DBHelper db = new DBHelper(this);
+        long remitenteId = db.getRemitenteIdByEmail(emailRemitente);
 
-        comprobanteTexto = "Comprobante de Envío\n\n"
-                + "Número de guía: " + guia + "\n"
-                + "Remitente: " + nombre + "\n"
-                + "Dirección: " + direccion + "\n"
-                + "Celular: " + celular + "\n";
+        if (remitenteId <= 0) {
+            Toast.makeText(this, "Registra el remitente antes de solicitar recolección", Toast.LENGTH_LONG).show();
+            return;
+        }
 
-        txtComprobante.setText(comprobanteTexto);
-        txtComprobante.setVisibility(View.VISIBLE);
-        btnDescargarPDF.setVisibility(View.VISIBLE);
+        // Crear destinatario
+        long destinatarioId = db.insertDestinatario(nombreDestinatario, celularDestinatario, direccionDestinatario);
 
-        Toast.makeText(this, "Envío registrado", Toast.LENGTH_SHORT).show();
+        // Crear envío
+        trackingGenerado = "ENV" + System.currentTimeMillis();
+        long now = System.currentTimeMillis();
+        double peso = 1.5; // ejemplo
+        precioEnvio = calcularPrecioSegunPeso(peso);
+
+        envioId = db.insertEnvio(trackingGenerado, remitenteId, destinatarioId,
+                direccionDestinatario, peso, "Solicitado", now, precioEnvio, null);
+
+        if (envioId > 0) {
+            comprobanteTexto = "Comprobante de Envío\n\n"
+                    + "Número de guía: " + trackingGenerado + "\n"
+                    + "Remitente: " + emailRemitente + "\n"
+                    + "Destinatario: " + nombreDestinatario + "\n"
+                    + "Dirección: " + direccionDestinatario + "\n"
+                    + "Celular: " + celularDestinatario + "\n"
+                    + "Precio: $" + precioEnvio + "\n";
+
+            txtComprobante.setText(comprobanteTexto);
+            txtComprobante.setVisibility(View.VISIBLE);
+            btnDescargarPDF.setVisibility(View.VISIBLE);
+
+            Toast.makeText(this, "Solicitud creada. Guía: " + trackingGenerado, Toast.LENGTH_LONG).show();
+        } else {
+            Toast.makeText(this, "Error creando la solicitud", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private double calcularPrecioSegunPeso(double peso) {
+        double precioBase = 10.0;
+        double precioPorKilo = 2.0;
+        return precioBase + (peso * precioPorKilo);
     }
 
     private void generarPDF() {
-        if (comprobanteTexto.isEmpty()) {
+        if (comprobanteTexto.isEmpty() || envioId == -1) {
             Toast.makeText(this, "No hay comprobante generado", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -103,16 +122,18 @@ public class EnvioActivity extends AppCompatActivity {
         PdfDocument pdfDocument = new PdfDocument();
         PdfDocument.PageInfo pageInfo = new PdfDocument.PageInfo.Builder(300, 600, 1).create();
         PdfDocument.Page page = pdfDocument.startPage(pageInfo);
-
         page.getCanvas().drawText(comprobanteTexto, 10, 25, new android.graphics.Paint());
-
         pdfDocument.finishPage(page);
 
         File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
-                "ComprobanteEnvio.pdf");
+                "ComprobanteEnvio_" + trackingGenerado + ".pdf");
 
         try {
             pdfDocument.writeTo(new FileOutputStream(file));
+
+            // Guardar ruta PDF en BD
+            DBHelper db = new DBHelper(this);
+            db.updateEnvioEstadoByTracking(trackingGenerado, "Solicitado"); // estado no cambia, pero actualizamos pdf_path
             Toast.makeText(this, "PDF guardado en Descargas", Toast.LENGTH_LONG).show();
         } catch (IOException e) {
             e.printStackTrace();
@@ -122,5 +143,4 @@ public class EnvioActivity extends AppCompatActivity {
         pdfDocument.close();
     }
 }
-
 

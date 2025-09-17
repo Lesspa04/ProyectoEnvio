@@ -1,9 +1,6 @@
 package co.edu.unipiloto.proyectoenvio;
 
 import android.os.Bundle;
-import android.text.method.HideReturnsTransformationMethod;
-import android.text.method.PasswordTransformationMethod;
-import android.util.Patterns;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -14,75 +11,102 @@ import androidx.appcompat.app.AppCompatActivity;
 
 public class LoginRegisterActivity extends AppCompatActivity {
 
-    EditText edtNombre, edtCelular, edtPassword;
-    Button btnRegistrar, btnIniciar;
-    ImageButton btnVerPassword;
-    boolean passwordVisible = false;
+    // Campos de la UI
+    private EditText edtNombre, edtEmail, edtCelular, edtPassword;
+    private Button btnRegistrar, btnIniciarSesion;
+    private ImageButton btnVerPassword;
+
+    private DBHelper dbHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login_register);
 
+        // Inicializa la UI
         edtNombre = findViewById(R.id.edtNombre);
+        edtEmail = findViewById(R.id.edtEmail);
         edtCelular = findViewById(R.id.edtCelular);
         edtPassword = findViewById(R.id.edtPassword);
         btnRegistrar = findViewById(R.id.btnRegistrar);
-        btnIniciar = findViewById(R.id.btnIniciarSesion);
+        btnIniciarSesion = findViewById(R.id.btnIniciarSesion);
         btnVerPassword = findViewById(R.id.btnVerPassword);
 
-        // Mostrar / ocultar contraseña
-        btnVerPassword.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(passwordVisible){
-                    edtPassword.setTransformationMethod(PasswordTransformationMethod.getInstance());
-                    passwordVisible = false;
-                } else {
-                    edtPassword.setTransformationMethod(HideReturnsTransformationMethod.getInstance());
-                    passwordVisible = true;
-                }
-                edtPassword.setSelection(edtPassword.length()); // cursor al final
-            }
-        });
+        // Inicializa DBHelper
+        dbHelper = new DBHelper(this);
 
-        // Botón Registrar
-        btnRegistrar.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                validarCampos();
-            }
-        });
+        // Acción para el botón "Registrar"
+        btnRegistrar.setOnClickListener(v -> registrarRemitente());
 
-        // Botón Iniciar sesión
-        btnIniciar.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                validarCampos();
+        // Acción para el botón "Iniciar Sesión"
+        btnIniciarSesion.setOnClickListener(v -> iniciarSesion());
+
+        // Mostrar/ocultar contraseña
+        btnVerPassword.setOnClickListener(v -> {
+            if (edtPassword.getInputType() == android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD) {
+                edtPassword.setInputType(android.text.InputType.TYPE_CLASS_TEXT);
+            } else {
+                edtPassword.setInputType(android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD);
             }
         });
     }
 
-    private void validarCampos() {
+    // Método para registrar un remitente
+    private void registrarRemitente() {
+        // Obtener datos de los campos
         String nombre = edtNombre.getText().toString().trim();
+        String email = edtEmail.getText().toString().trim();
         String celular = edtCelular.getText().toString().trim();
         String password = edtPassword.getText().toString().trim();
 
-        if (!nombre.matches("[a-zA-Z ]+")) {
-            Toast.makeText(this, "El nombre solo debe contener letras", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        if (!celular.matches("\\d{10}")) {
-            Toast.makeText(this, "Ingrese un número de celular válido (10 dígitos)", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        if (password.length() < 6 || !password.matches(".*[A-Z].*") || !password.matches(".*\\d.*")) {
-            Toast.makeText(this, "La contraseña debe tener mínimo 6 caracteres, una mayúscula y un número", Toast.LENGTH_LONG).show();
+        // Validación de campos
+        if (nombre.isEmpty() || email.isEmpty() || celular.isEmpty() || password.isEmpty()) {
+            Toast.makeText(this, "Por favor, completa todos los campos.", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        Toast.makeText(this, "Validación correcta ✅", Toast.LENGTH_SHORT).show();
+        // Verificar si el email ya existe
+        long remitenteId = dbHelper.getRemitenteIdByEmail(email);
+        if (remitenteId != -1) {
+            Toast.makeText(this, "Este correo ya está registrado.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Registrar el nuevo remitente
+        long createdAt = System.currentTimeMillis();
+        long result = dbHelper.insertRemitente(nombre, email, celular, password, createdAt);
+
+        // Mostrar mensaje según el resultado
+        if (result > 0) {
+            Toast.makeText(this, "Registro exitoso", Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(this, "Error al registrar", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    // Método para iniciar sesión
+    private void iniciarSesion() {
+        // Obtener email y contraseña
+        String email = edtEmail.getText().toString().trim();
+        String password = edtPassword.getText().toString().trim();
+
+        if (email.isEmpty() || password.isEmpty()) {
+            Toast.makeText(this, "Por favor, ingresa tu email y contraseña.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Verificar si el email existe
+        long remitenteId = dbHelper.getRemitenteIdByEmail(email);
+        if (remitenteId == -1) {
+            Toast.makeText(this, "Este correo no está registrado.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Aquí podrías validar la contraseña con la base de datos, por ahora asumimos que la contraseña es correcta
+        Toast.makeText(this, "Bienvenido de nuevo", Toast.LENGTH_SHORT).show();
+
+        // Redirigir a otra actividad si es necesario (ejemplo)
+        // Intent intent = new Intent(this, MainActivity.class);
+        // startActivity(intent);
     }
 }
-
-
