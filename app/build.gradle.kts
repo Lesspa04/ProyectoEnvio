@@ -34,6 +34,7 @@ android {
 dependencies {
     implementation("org.osmdroid:osmdroid-android:6.1.16")
     implementation("com.itextpdf:itextg:5.5.10")
+    implementation("androidx.recyclerview:recyclerview:1.2.1")
     implementation(libs.appcompat)
     implementation(libs.material)
     implementation(libs.activity)

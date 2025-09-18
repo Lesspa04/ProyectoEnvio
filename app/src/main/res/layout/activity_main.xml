@@ -26,6 +26,20 @@
         android:text="Asignación de Rutas"
         android:layout_marginTop="20dp"/>
 
+    <Button
+        android:id="@+id/btnRecolecciones"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Mis Recolecciones"
+        android:layout_marginTop="10dp" />
+
+    <Button
+        android:id="@+id/btnSeguimiento"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Seguimiento de Envío"
+        android:layout_marginTop="10dp" />
+
 </LinearLayout>
 
 
