@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="20dp">
@@ -9,27 +10,63 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <EditText
-            android:id="@+id/edtRemitente"
-            android:hint="Nombre del remitente"
+        <!-- Nombre remitente -->
+        <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:hint="Nombre del remitente">
 
-        <EditText
-            android:id="@+id/edtDireccion"
-            android:hint="Dirección del remitente"
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/edtRemitente"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textPersonName"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Dirección (desde mapa) -->
+        <TextView
+            android:id="@+id/tvDireccionSeleccionada"
+            android:text="Dirección no seleccionada"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"/>
 
-        <EditText
-            android:id="@+id/edtCelularRemitente"
+        <Button
+            android:id="@+id/btnSeleccionarDireccion"
+            android:text="Seleccionar dirección en mapa"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"/>
+
+        <!-- Celular -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:hint="Celular del remitente"
-            android:inputType="number"
+            android:layout_marginTop="10dp">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/edtCelularRemitente"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="phone"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Peso del paquete -->
+        <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"/>
+            android:hint="Peso estimado (kg)"
+            android:layout_marginTop="10dp">
 
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/edtPeso"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="numberDecimal"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Botón registrar envío -->
         <Button
             android:id="@+id/btnRegistrarEnvio"
             android:text="Registrar Envío"
@@ -37,6 +74,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"/>
 
+        <!-- Comprobante -->
         <TextView
             android:id="@+id/txtComprobante"
             android:textSize="16sp"
@@ -45,13 +83,20 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>
 
+        <!-- Botón PDF -->
         <Button
             android:id="@+id/btnDescargarPDF"
             android:text="Descargar PDF"
             android:visibility="gone"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>
+
+        <!-- Simulación pago -->
+        <Button
+            android:id="@+id/btnPagar"
+            android:text="Pagar Envío"
+            android:visibility="gone"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
     </LinearLayout>
 </ScrollView>
-
-

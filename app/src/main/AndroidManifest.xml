@@ -6,9 +6,12 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+
 
     <application
         android:allowBackup="true"
+        android:usesCleartextTraffic="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@android:drawable/ic_menu_compass"
@@ -16,6 +19,10 @@
         android:roundIcon="@android:drawable/ic_menu_compass"
         android:supportsRtl="true"
         android:theme="@style/Theme.ProyectoEnvio">
+
+        <meta-data
+            android:name="org.osmdroid.config"
+            android:resource="@xml/osmdroid_config"/>
 
         <activity
             android:name=".MainActivity"
@@ -27,25 +34,26 @@
         </activity>
 
         <activity
-            android:name=".LoginRegisterActivity"
+            android:name=".RegisterActivity"
             android:exported="false" />
-
+        <activity
+            android:name=".MapaDireccionActivity"
+            android:exported="false" />
+        <activity
+            android:name=".LoginActivity"
+            android:exported="false" />
         <activity
             android:name=".EnvioActivity"
             android:exported="false" />
-
         <activity
             android:name=".RutasActivity"
             android:exported="false" />
-
         <activity
             android:name=".MisRecoleccionesActivity"
             android:exported="false" />
-
         <activity
             android:name=".SeguimientoActivity"
             android:exported="false" />
-
     </application>
 
 </manifest>

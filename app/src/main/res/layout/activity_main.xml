@@ -7,10 +7,16 @@
     android:layout_height="match_parent">
 
     <Button
-        android:id="@+id/btnLoginRegister"
+        android:id="@+id/btnRegister"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Registro / Inicio de Sesión" />
+        android:text="Registro"/>
+
+    <Button
+        android:id="@+id/btnLogin"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Inicio de sesión"/>
 
     <Button
         android:id="@+id/btnEnvio"
@@ -24,7 +30,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Asignación de Rutas"
-        android:layout_marginTop="20dp"/>
+        android:layout_marginTop="10dp"/>
 
     <Button
         android:id="@+id/btnRecolecciones"

@@ -2,28 +2,32 @@ package co.edu.unipiloto.proyectoenvio;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.Button;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 public class MainActivity extends AppCompatActivity {
 
-    Button btnLogin, btnEnvio, btnRutas, btnRecolecciones, btnSeguimiento;
+    Button btnRegister, btnLogin, btnEnvio, btnRutas, btnRecolecciones, btnSeguimiento;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        btnLogin = findViewById(R.id.btnLoginRegister);
+        btnRegister = findViewById(R.id.btnRegister);
+        btnLogin = findViewById(R.id.btnLogin);
         btnEnvio = findViewById(R.id.btnEnvio);
         btnRutas = findViewById(R.id.btnRutas);
         btnRecolecciones = findViewById(R.id.btnRecolecciones);
         btnSeguimiento = findViewById(R.id.btnSeguimiento);
 
+        btnRegister.setOnClickListener(v ->
+                startActivity(new Intent(MainActivity.this, RegisterActivity.class))
+        );
+
         btnLogin.setOnClickListener(v ->
-                startActivity(new Intent(MainActivity.this, LoginRegisterActivity.class))
+                startActivity(new Intent(MainActivity.this, LoginActivity.class))
         );
 
         btnEnvio.setOnClickListener(v ->
