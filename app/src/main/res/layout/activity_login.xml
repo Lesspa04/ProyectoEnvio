@@ -3,12 +3,51 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="20dp">
+    android:padding="20dp"
+    android:fillViewport="true">
 
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:layout_gravity="center">
+
+    <!-- Contenedor de logo y nombre de la app -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:layout_marginBottom="40dp">
+
+        <!-- Logo -->
+        <ImageView
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_gravity="center_horizontal"
+            android:contentDescription="Logo de Rimessa"
+            android:src="@mipmap/ic_launcher" />
+
+        <!-- Nombre de la app -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Rimessa"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textColor="?attr/colorOnBackground"
+            android:fontFamily="serif"
+            android:layout_marginTop="10dp"
+            android:layout_gravity="center_horizontal" />
+    </LinearLayout>
+
+    <!-- Contenedor del formulario -->
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center">
 
         <!-- Usuario -->
         <com.google.android.material.textfield.TextInputLayout
@@ -43,6 +82,8 @@
             android:id="@+id/btnIrRegistro"
             android:text="Registrar"
             android:layout_width="match_parent"
+            android:backgroundTint="?attr/colorPrimary"
+            android:textColor="?attr/colorOnPrimary"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"/>
 
@@ -51,7 +92,10 @@
             android:id="@+id/btnLogin"
             android:text="Iniciar Sesión"
             android:layout_width="match_parent"
+            android:backgroundTint="?attr/colorPrimary"
+            android:textColor="?attr/colorOnPrimary"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"/>
+    </LinearLayout>
     </LinearLayout>
 </ScrollView>

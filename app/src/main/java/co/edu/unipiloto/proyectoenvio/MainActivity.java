@@ -45,5 +45,6 @@ public class MainActivity extends AppCompatActivity {
         btnSeguimiento.setOnClickListener(v ->
                 startActivity(new Intent(MainActivity.this, SeguimientoActivity.class))
         );
+
     }
 }

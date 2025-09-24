@@ -2,4 +2,8 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="colorButtonLight">#3949AB</color> <!-- Azul para modo claro -->
+    <color name="colorButtonDark">#90CAF9</color>  <!-- Azul claro para modo oscuro -->
+    <color name="colorOnButtonLight">#FFFFFF</color> <!-- Texto blanco claro -->
+    <color name="colorOnButtonDark">#000000</color>   <!-- Texto oscuro para noche -->
 </resources>

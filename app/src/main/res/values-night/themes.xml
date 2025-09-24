@@ -1,6 +1,9 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
     <style name="Base.Theme.ProyectoEnvio" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/colorButtonDark</item>
+        <item name="colorOnPrimary">@color/colorOnButtonDark</item>
+        <!-- Otros colores... -->
         <!-- Customize your dark theme here. -->
         <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
     </style>
