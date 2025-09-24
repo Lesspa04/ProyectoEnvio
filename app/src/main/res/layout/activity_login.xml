@@ -77,16 +77,6 @@
                 android:inputType="textPassword" />
         </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- Botón ir a registro -->
-        <Button
-            android:id="@+id/btnIrRegistro"
-            android:text="Registrar"
-            android:layout_width="match_parent"
-            android:backgroundTint="?attr/colorPrimary"
-            android:textColor="?attr/colorOnPrimary"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"/>
-
         <!-- Botón login -->
         <Button
             android:id="@+id/btnLogin"
@@ -95,7 +85,18 @@
             android:backgroundTint="?attr/colorPrimary"
             android:textColor="?attr/colorOnPrimary"
             android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"/>
+
+        <!-- Botón ir a registro -->
+        <Button
+            android:id="@+id/btnIrRegistro"
+            android:text="Registrar"
+            android:layout_width="match_parent"
+            android:backgroundTint="?attr/colorPrimary"
+            android:textColor="?attr/colorOnPrimary"
+            android:layout_height="wrap_content"
             android:layout_marginTop="10dp"/>
+
     </LinearLayout>
     </LinearLayout>
 </ScrollView>
