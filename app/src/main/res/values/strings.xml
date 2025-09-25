@@ -3,8 +3,8 @@
 
     <string-array name="roles_array">
         <item>Ciudadano</item>
-        <item>Planeador</item>
-        <item>Decisor</item>
+        <item>Recolector de encomiendas</item>
+        <item>Asignador de rutas</item>
     </string-array>
 </resources>
 

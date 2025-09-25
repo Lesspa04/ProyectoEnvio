@@ -1,4 +1,4 @@
-package co.edu.unipiloto.proyectoenvio;
+package co.edu.unipiloto.proyectoenvio.database;
 
 import org.osmdroid.util.GeoPoint;
 
@@ -9,6 +9,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+
+import co.edu.unipiloto.proyectoenvio.Encomiendas;
 
 public class FakeBackend {
     private static FakeBackend instance;

@@ -8,7 +8,6 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 
-
     <application
         android:allowBackup="true"
         android:usesCleartextTraffic="true"
@@ -22,10 +21,11 @@
 
         <meta-data
             android:name="org.osmdroid.config"
-            android:resource="@xml/osmdroid_config"/>
+            android:resource="@xml/osmdroid_config" />
 
+        <!-- Nueva pantalla inicial: SplashActivity -->
         <activity
-            android:name=".MainActivity"
+            android:name=".menus.SplashActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -33,27 +33,24 @@
             </intent-filter>
         </activity>
 
-        <activity
-            android:name=".RegisterActivity"
-            android:exported="false" />
-        <activity
-            android:name=".MapaDireccionActivity"
-            android:exported="false" />
-        <activity
-            android:name=".LoginActivity"
-            android:exported="false" />
-        <activity
-            android:name=".EnvioActivity"
-            android:exported="false" />
-        <activity
-            android:name=".RutasActivity"
-            android:exported="false" />
-        <activity
-            android:name=".MisRecoleccionesActivity"
-            android:exported="false" />
-        <activity
-            android:name=".SeguimientoActivity"
-            android:exported="false" />
+        <!-- Resto de actividades -->
+        <activity android:name=".loginSignup.RegisterActivity" android:exported="false" />
+        <activity android:name=".loginSignup.LoginActivity" android:exported="false" />
+        <activity android:name=".EnvioActivity" android:exported="false" />
+        <activity android:name=".RutasActivity" android:exported="false" />
+        <activity android:name=".MisRecoleccionesActivity" android:exported="false" />
+        <activity android:name=".SeguimientoActivity" android:exported="false" />
+        <activity android:name=".MapaDireccionActivity" android:exported="false"/>
+        <activity android:name=".RecoleccionDetalleActivity" android:exported="false"/>
+        <activity android:name=".perfil.PerfilActivity" android:exported="false"/>
+
+
+        <!-- La que antes era MainActivity (ahora MenuPrincipalActivity) -->
+        <activity android:name=".menus.MenuPrincipalActivity" android:exported="false" />
+
+        <!-- Si mantenés MainActivity por ahora, sin usar -->
+        <!-- <activity android:name=".MainActivity" android:exported="false" /> -->
+
     </application>
 
 </manifest>

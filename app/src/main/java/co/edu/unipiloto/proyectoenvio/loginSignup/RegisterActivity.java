@@ -1,4 +1,4 @@
-package co.edu.unipiloto.proyectoenvio;
+package co.edu.unipiloto.proyectoenvio.loginSignup;
 
 import android.app.DatePickerDialog;
 import android.content.Intent;
@@ -8,8 +8,14 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import com.google.android.material.textfield.TextInputEditText;
+import androidx.appcompat.app.AlertDialog;
 
 import java.util.Calendar;
+
+import co.edu.unipiloto.proyectoenvio.database.DatabaseHelper;
+import co.edu.unipiloto.proyectoenvio.MapaDireccionActivity;
+import co.edu.unipiloto.proyectoenvio.R;
+
 public class RegisterActivity extends AppCompatActivity {
 
     TextInputEditText edtNombre, edtUsuario, edtEmail, edtPassword, edtConfirmPassword;
@@ -22,41 +28,46 @@ public class RegisterActivity extends AppCompatActivity {
 
     private ActivityResultLauncher<Intent> direccionLauncher;
 
+    // Aquí el helper de base de datos
+    DatabaseHelper dbHelper;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-            super.onCreate(savedInstanceState);
-            setContentView(R.layout.activity_register);
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_register);
 
-            edtNombre = findViewById(R.id.edtNombre);
-            edtUsuario = findViewById(R.id.edtUsuario);
-            edtEmail = findViewById(R.id.edtEmail);
-            edtPassword = findViewById(R.id.edtPassword);
-            edtConfirmPassword = findViewById(R.id.edtConfirmPassword);
+        // Inicializamos helper BD
+        dbHelper = new DatabaseHelper(this);
 
-            spinnerRol = findViewById(R.id.spinnerRol);
-            radioGroupGenero = findViewById(R.id.radioGroupGenero);
-            btnFechaNacimiento = findViewById(R.id.btnFechaNacimiento);
-            btnSeleccionarDireccion = findViewById(R.id.btnSeleccionarDireccion);
-            tvDireccionSeleccionada = findViewById(R.id.tvDireccionSeleccionada);
-            btnRegistrar = findViewById(R.id.btnRegistrar);
+        edtNombre = findViewById(R.id.edtNombre);
+        edtUsuario = findViewById(R.id.edtUsuario);
+        edtEmail = findViewById(R.id.edtEmail);
+        edtPassword = findViewById(R.id.edtPassword);
+        edtConfirmPassword = findViewById(R.id.edtConfirmPassword);
 
-            direccionLauncher = registerForActivityResult(
-                    new ActivityResultContracts.StartActivityForResult(),
-                    result -> {
-                        if (result.getResultCode() == RESULT_OK && result.getData() != null) {
-                            Intent data = result.getData();
-                            double lat = data.getDoubleExtra("latitud", 0.0);
-                            double lon = data.getDoubleExtra("longitud", 0.0);
-                            tvDireccionSeleccionada.setText("Lat: " + lat + ", Lon: " + lon);
-                        }
+        spinnerRol = findViewById(R.id.spinnerRol);
+        radioGroupGenero = findViewById(R.id.radioGroupGenero);
+        btnFechaNacimiento = findViewById(R.id.btnFechaNacimiento);
+        btnSeleccionarDireccion = findViewById(R.id.btnSeleccionarDireccion);
+        tvDireccionSeleccionada = findViewById(R.id.tvDireccionSeleccionada);
+        btnRegistrar = findViewById(R.id.btnRegistrar);
+
+        direccionLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                        Intent data = result.getData();
+                        double lat = data.getDoubleExtra("latitud", 0.0);
+                        double lon = data.getDoubleExtra("longitud", 0.0);
+                        tvDireccionSeleccionada.setText("Lat: " + lat + ", Lon: " + lon);
                     }
-            );
+                }
+        );
 
-            btnSeleccionarDireccion.setOnClickListener(v -> {
-                Intent i = new Intent(RegisterActivity.this, MapaDireccionActivity.class);
-                direccionLauncher.launch(i);
-            });
-
+        btnSeleccionarDireccion.setOnClickListener(v -> {
+            Intent i = new Intent(RegisterActivity.this, MapaDireccionActivity.class);
+            direccionLauncher.launch(i);
+        });
 
         // Roles en Spinner
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
@@ -74,7 +85,7 @@ public class RegisterActivity extends AppCompatActivity {
             DatePickerDialog dialog = new DatePickerDialog(this, (view, year, month, dayOfMonth) -> {
                 fechaNacimiento = Calendar.getInstance();
                 fechaNacimiento.set(year, month, dayOfMonth);
-                btnFechaNacimiento.setText(dayOfMonth + "/" + (month+1) + "/" + year);
+                btnFechaNacimiento.setText(dayOfMonth + "/" + (month + 1) + "/" + year);
             }, anio, mes, dia);
             dialog.show();
         });
@@ -82,6 +93,7 @@ public class RegisterActivity extends AppCompatActivity {
         // Botón registrar
         btnRegistrar.setOnClickListener(v -> validarCampos());
     }
+
     private void validarCampos() {
         String nombre = edtNombre.getText().toString().trim();
         String usuario = edtUsuario.getText().toString().trim();
@@ -105,6 +117,15 @@ public class RegisterActivity extends AppCompatActivity {
             return;
         }
 
+        if (!esPasswordSegura(password)) {
+            new AlertDialog.Builder(this)
+                    .setTitle("Contraseña insegura")
+                    .setMessage("La contraseña debe tener mínimo 8 caracteres, una mayúscula, una minúscula, un número y un símbolo.")
+                    .setPositiveButton("OK", null)
+                    .show();
+            return;
+        }
+
         if (fechaNacimiento != null) {
             Calendar hoy = Calendar.getInstance();
             int edad = hoy.get(Calendar.YEAR) - fechaNacimiento.get(Calendar.YEAR);
@@ -125,7 +146,33 @@ public class RegisterActivity extends AppCompatActivity {
             Toast.makeText(this, "Seleccione género", Toast.LENGTH_SHORT).show();
             return;
         }
+        RadioButton rbGenero = findViewById(generoId);
+        String genero = rbGenero.getText().toString();
 
-        Toast.makeText(this, "Registro exitoso", Toast.LENGTH_LONG).show();
+        String direccion = tvDireccionSeleccionada.getText().toString();
+        String rol = spinnerRol.getSelectedItem().toString();
+
+        // Intentamos insertar el usuario en la base
+        boolean inserto = dbHelper.insertarUsuario(
+                nombre, usuario, email, password, direccion, rol,
+                btnFechaNacimiento.getText().toString(), genero);
+
+        if (inserto) {
+            Toast.makeText(this, "Registro exitoso", Toast.LENGTH_LONG).show();
+            // Redirigir a LoginActivity
+            Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
+            startActivity(intent);
+            finish();
+        } else {
+            Toast.makeText(this, "Error al registrar, el usuario puede existir", Toast.LENGTH_LONG).show();
+        }
     }
+
+    private boolean esPasswordSegura(String password) {
+        // Mínimo 8 caracteres, al menos una mayúscula, una minúscula, un número y un símbolo
+        String regex = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*#?&])[A-Za-z\\d@$!%*#?&]{8,}$";
+        return password.matches(regex);
+    }
+
 }
+

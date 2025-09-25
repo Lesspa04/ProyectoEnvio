@@ -12,6 +12,8 @@ import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Locale;
 
+import co.edu.unipiloto.proyectoenvio.database.FakeBackend;
+
 public class SeguimientoActivity extends AppCompatActivity {
 
     EditText edtBuscarGuia;

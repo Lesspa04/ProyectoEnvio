@@ -2,7 +2,6 @@ package co.edu.unipiloto.proyectoenvio;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
-import android.location.Location;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.TextView;
@@ -22,10 +21,12 @@ import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 
 import java.util.List;
 
+import co.edu.unipiloto.proyectoenvio.database.FakeBackend;
+
 public class RecoleccionDetalleActivity extends AppCompatActivity {
 
     TextView tvGuia, tvNombre, tvDireccion, tvEstado;
-    Button btnMarcarRecogida;
+    Button btnMarcarRecogida, btnMarcarEntrega;
     MapView map;
     MyLocationNewOverlay myLocationOverlay;
     Encomiendas encomienda;
@@ -43,6 +44,7 @@ public class RecoleccionDetalleActivity extends AppCompatActivity {
         tvDireccion = findViewById(R.id.tvDireccion);
         tvEstado = findViewById(R.id.tvEstado);
         btnMarcarRecogida = findViewById(R.id.btnMarcarRecogida);
+        btnMarcarEntrega = findViewById(R.id.btnMarcarEntrega);
         map = findViewById(R.id.mapDetalle);
         map.setMultiTouchControls(true);
 
@@ -98,6 +100,14 @@ public class RecoleccionDetalleActivity extends AppCompatActivity {
             FakeBackend.getInstance().actualizarEstado(encomienda.getNumeroGuia(), Encomiendas.Estado.RECOGIDO);
             tvEstado.setText("Estado: " + Encomiendas.Estado.RECOGIDO.name());
             Toast.makeText(this, "Encomienda marcada como recogida", Toast.LENGTH_SHORT).show();
+
+        });
+
+        // Botón marcar entrega
+        btnMarcarEntrega.setOnClickListener(v -> {
+            FakeBackend.getInstance().actualizarEstado(encomienda.getNumeroGuia(), Encomiendas.Estado.RECOGIDO);
+            tvEstado.setText("Estado: " + Encomiendas.Estado.ENTREGADO.name());
+            Toast.makeText(this, "Encomienda marcada como entregada", Toast.LENGTH_SHORT).show();
 
         });
     }

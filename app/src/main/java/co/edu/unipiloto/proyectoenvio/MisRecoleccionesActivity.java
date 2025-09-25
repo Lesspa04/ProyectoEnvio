@@ -8,6 +8,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
 
+import co.edu.unipiloto.proyectoenvio.database.FakeBackend;
+
 public class MisRecoleccionesActivity extends AppCompatActivity {
 
     RecyclerView rvRecolecciones;

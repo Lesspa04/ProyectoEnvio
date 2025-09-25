@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFFFFF">
+
+    <!-- Contenedor centrado verticalmente -->
+    <LinearLayout
+        android:id="@+id/centerContainer"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:layout_centerInParent="true"
+        android:paddingStart="32dp"
+        android:paddingEnd="32dp">
+
+        <!-- Logo -->
+        <ImageView
+            android:id="@+id/logo"
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:src="@mipmap/ic_launcher"
+            android:contentDescription="Logo de Rimessa" />
+
+        <!-- Nombre de la App -->
+        <TextView
+            android:id="@+id/appName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Rimessa"
+            android:textSize="36sp"
+            android:textStyle="bold"
+            android:textColor="#333333"
+            android:layout_marginTop="24dp" />
+
+        <!-- Descripción -->
+        <TextView
+            android:id="@+id/appDescription"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Gestión fácil de envíos, recolecciones y seguimiento en tiempo real"
+            android:textSize="16sp"
+            android:textColor="#666666"
+            android:gravity="center"
+            android:layout_marginTop="12dp" />
+    </LinearLayout>
+
+    <!-- Botón flecha abajo -->
+    <ImageButton
+        android:id="@+id/btnContinuar"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="60dp"
+        android:background="@drawable/btn_circle"
+        android:src="@drawable/ic_arrow_forward"
+        android:contentDescription="Continuar"
+        app:tint="#FFFFFF" />
+
+</RelativeLayout>

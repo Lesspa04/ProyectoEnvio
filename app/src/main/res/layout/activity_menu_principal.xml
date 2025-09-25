@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:gravity="center"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <!-- Cabecera -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="24dp">
+
+            <ImageView
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:src="@mipmap/ic_launcher"
+                android:contentDescription="Logo"
+                android:layout_marginEnd="8dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Menú Principal"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:fontFamily="sans-serif-medium"
+                android:textColor="?android:textColorPrimary" />
+        </LinearLayout>
+
+        <!-- Botones del menú -->
+        <Button
+            android:id="@+id/btnEnvio"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="📦 Registro de Envío"
+            android:layout_marginTop="6dp"
+            android:textSize="14sp" />
+
+        <Button
+            android:id="@+id/btnRutas"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="🗺️ Asignación de Rutas"
+            android:layout_marginTop="6dp"
+            android:textSize="14sp" />
+
+        <Button
+            android:id="@+id/btnRecolecciones"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="📥 Mis Recolecciones"
+            android:layout_marginTop="6dp"
+            android:textSize="14sp" />
+
+        <Button
+            android:id="@+id/btnSeguimiento"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="🔍 Seguimiento de Envío"
+            android:layout_marginTop="6dp"
+            android:textSize="14sp" />
+
+        <!-- Línea divisoria -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="?attr/colorPrimary"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="16dp" />
+
+        <Button
+            android:id="@+id/btnMiPerfil"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="👤 Mi Perfil"
+            android:layout_marginTop="6dp"
+            android:textSize="14sp" />
+
+        <Button
+            android:id="@+id/btnCerrarSesion"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="🔓 Cerrar Sesión"
+            android:layout_marginTop="10dp"
+            android:textSize="14sp" />
+
+    </LinearLayout>
+</ScrollView>
