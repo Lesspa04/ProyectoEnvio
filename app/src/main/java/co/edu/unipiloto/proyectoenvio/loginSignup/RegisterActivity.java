@@ -2,6 +2,8 @@ package co.edu.unipiloto.proyectoenvio.loginSignup;
 
 import android.app.DatePickerDialog;
 import android.content.Intent;
+import android.location.Address;
+import android.location.Geocoder;
 import android.os.Bundle;
 import android.widget.*;
 import androidx.appcompat.app.AppCompatActivity;
@@ -10,7 +12,10 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import com.google.android.material.textfield.TextInputEditText;
 import androidx.appcompat.app.AlertDialog;
 
+import java.io.IOException;
 import java.util.Calendar;
+import java.util.List;
+import java.util.Locale;
 
 import co.edu.unipiloto.proyectoenvio.database.DatabaseHelper;
 import co.edu.unipiloto.proyectoenvio.MapaDireccionActivity;
@@ -30,6 +35,9 @@ public class RegisterActivity extends AppCompatActivity {
 
     // Aquí el helper de base de datos
     DatabaseHelper dbHelper;
+
+    // Guardamos la dirección como texto real
+    private String direccionSeleccionada = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,6 +60,7 @@ public class RegisterActivity extends AppCompatActivity {
         tvDireccionSeleccionada = findViewById(R.id.tvDireccionSeleccionada);
         btnRegistrar = findViewById(R.id.btnRegistrar);
 
+        // Lanzador para mapa
         direccionLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 result -> {
@@ -59,7 +68,15 @@ public class RegisterActivity extends AppCompatActivity {
                         Intent data = result.getData();
                         double lat = data.getDoubleExtra("latitud", 0.0);
                         double lon = data.getDoubleExtra("longitud", 0.0);
-                        tvDireccionSeleccionada.setText("Lat: " + lat + ", Lon: " + lon);
+
+                        // Convertir lat/lon a dirección real
+                        new Thread(() -> {
+                            String addr = obtenerDireccion(lat, lon);
+                            runOnUiThread(() -> {
+                                direccionSeleccionada = addr;
+                                tvDireccionSeleccionada.setText(addr);
+                            });
+                        }).start();
                     }
                 }
         );
@@ -149,12 +166,16 @@ public class RegisterActivity extends AppCompatActivity {
         RadioButton rbGenero = findViewById(generoId);
         String genero = rbGenero.getText().toString();
 
-        String direccion = tvDireccionSeleccionada.getText().toString();
+        if (direccionSeleccionada.isEmpty()) {
+            Toast.makeText(this, "Debe seleccionar una dirección en el mapa", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         String rol = spinnerRol.getSelectedItem().toString();
 
         // Intentamos insertar el usuario en la base
         boolean inserto = dbHelper.insertarUsuario(
-                nombre, usuario, email, password, direccion, rol,
+                nombre, usuario, email, password, direccionSeleccionada, rol,
                 btnFechaNacimiento.getText().toString(), genero);
 
         if (inserto) {
@@ -169,10 +190,21 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
     private boolean esPasswordSegura(String password) {
-        // Mínimo 8 caracteres, al menos una mayúscula, una minúscula, un número y un símbolo
         String regex = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*#?&])[A-Za-z\\d@$!%*#?&]{8,}$";
         return password.matches(regex);
     }
 
+    // Convierte lat/lon a dirección en texto
+    private String obtenerDireccion(double lat, double lon) {
+        Geocoder geocoder = new Geocoder(this, Locale.getDefault());
+        try {
+            List<Address> direcciones = geocoder.getFromLocation(lat, lon, 1);
+            if (direcciones != null && !direcciones.isEmpty()) {
+                return direcciones.get(0).getAddressLine(0);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return "Dirección desconocida";
+    }
 }
-

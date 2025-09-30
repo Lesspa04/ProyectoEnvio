@@ -6,7 +6,12 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+
+    <!-- Permisos de almacenamiento -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="29" />
 
     <application
         android:allowBackup="true"
@@ -17,7 +22,9 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/Theme.ProyectoEnvio">
+        android:theme="@style/Theme.ProyectoEnvio"
+        android:requestLegacyExternalStorage="true"
+        tools:targetApi="29">
 
         <meta-data
             android:name="org.osmdroid.config"
@@ -43,13 +50,7 @@
         <activity android:name=".MapaDireccionActivity" android:exported="false"/>
         <activity android:name=".RecoleccionDetalleActivity" android:exported="false"/>
         <activity android:name=".perfil.PerfilActivity" android:exported="false"/>
-
-
-        <!-- La que antes era MainActivity (ahora MenuPrincipalActivity) -->
         <activity android:name=".menus.MenuPrincipalActivity" android:exported="false" />
-
-        <!-- Si mantenés MainActivity por ahora, sin usar -->
-        <!-- <activity android:name=".MainActivity" android:exported="false" /> -->
 
     </application>
 

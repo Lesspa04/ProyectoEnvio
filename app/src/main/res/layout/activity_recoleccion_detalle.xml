@@ -1,35 +1,62 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
-    android:padding="12dp"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:padding="12dp">
 
-    <TextView android:id="@+id/tvGuia" android:textStyle="bold" android:textSize="16sp"
-        android:layout_width="wrap_content" android:layout_height="wrap_content"/>
-
-    <TextView android:id="@+id/tvNombre" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
-    <TextView android:id="@+id/tvDireccion" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
-    <TextView android:id="@+id/tvEstado" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
-
-    <org.osmdroid.views.MapView
-        android:id="@+id/mapDetalle"
-        android:layout_width="match_parent"
-        android:layout_height="250dp"
-        android:layout_marginTop="8dp"/>
-
-    <Button
-        android:id="@+id/btnMarcarRecogida"
-        android:text="Recogida realizada"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"/>
+        android:orientation="vertical">
 
-    <Button
-        android:id="@+id/btnMarcarEntrega"
-        android:text="Entrega realizada"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"/>
+        <!-- Número de guía -->
+        <TextView
+            android:id="@+id/tvGuia"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
 
-</LinearLayout>
+        <!-- Remitente -->
+        <TextView android:id="@+id/tvRemitente" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+        <TextView android:id="@+id/tvCelularRem" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+        <TextView android:id="@+id/tvDireccionRem" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+
+        <!-- Destinatario -->
+        <TextView android:id="@+id/tvDestinatario" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+        <TextView android:id="@+id/tvCelularDest" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+        <TextView android:id="@+id/tvDireccionDest" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+
+        <!-- Estado, peso y precio -->
+        <TextView android:id="@+id/tvEstado" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+        <TextView android:id="@+id/tvPeso" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+        <TextView android:id="@+id/tvPrecio" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+
+        <!-- Fechas -->
+        <TextView android:id="@+id/tvFechaSolicitud" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+        <TextView android:id="@+id/tvFechaEntrega" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+
+        <!-- Mapa -->
+        <org.osmdroid.views.MapView
+            android:id="@+id/mapDetalle"
+            android:layout_width="match_parent"
+            android:layout_height="250dp"
+            android:layout_marginTop="8dp"/>
+
+        <!-- Botones -->
+        <Button
+            android:id="@+id/btnMarcarRecogida"
+            android:text="Recogida realizada"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"/>
+
+        <Button
+            android:id="@+id/btnMarcarEntrega"
+            android:text="Entrega realizada"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"/>
+
+    </LinearLayout>
+</ScrollView>
