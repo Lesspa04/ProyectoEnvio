@@ -7,6 +7,8 @@ import android.os.Bundle;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.view.Menu;
+import android.view.MenuItem;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -29,6 +31,7 @@ import java.util.Locale;
 import android.location.Address;
 import android.location.Geocoder;
 
+
 import co.edu.unipiloto.proyectoenvio.database.DatabaseHelper;
 
 public class RecoleccionDetalleActivity extends AppCompatActivity {
@@ -37,7 +40,8 @@ public class RecoleccionDetalleActivity extends AppCompatActivity {
             tvDestinatario, tvCelularDest, tvDireccionDest,
             tvEstado, tvPeso, tvPrecio, tvFechaSolicitud, tvFechaEntrega;
 
-    Button btnMarcarRecogida, btnMarcarEntrega;
+    Button btnMarcarRecogida, btnMarcarEntrega, btnEmbalajeSeguro;
+
     MapView map;
     MyLocationNewOverlay myLocationOverlay;
     Encomiendas encomienda;
@@ -49,26 +53,32 @@ public class RecoleccionDetalleActivity extends AppCompatActivity {
         Configuration.getInstance().setUserAgentValue(getPackageName());
         setContentView(R.layout.activity_recoleccion_detalle);
 
+        androidx.appcompat.widget.Toolbar toolbar = findViewById(R.id.toolbarDetalle);
+        setSupportActionBar(toolbar);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
+        toolbar.setNavigationOnClickListener(v -> onBackPressed());
+
         dbHelper = new DatabaseHelper(this);
 
         // Bind views
         tvGuia = findViewById(R.id.tvGuia);
         tvRemitente = findViewById(R.id.tvRemitente);
-        tvCelularRem = findViewById(R.id.tvCelularRem);
         tvDireccionRem = findViewById(R.id.tvDireccionRem);
         tvDestinatario = findViewById(R.id.tvDestinatario);
-        tvCelularDest = findViewById(R.id.tvCelularDest);
         tvDireccionDest = findViewById(R.id.tvDireccionDest);
         tvEstado = findViewById(R.id.tvEstado);
-        tvPeso = findViewById(R.id.tvPeso);
-        tvPrecio = findViewById(R.id.tvPrecio);
-        tvFechaSolicitud = findViewById(R.id.tvFechaSolicitud);
-        tvFechaEntrega = findViewById(R.id.tvFechaEntrega);
 
+        btnEmbalajeSeguro = findViewById(R.id.btnEmbalajeSeguro);
         btnMarcarRecogida = findViewById(R.id.btnMarcarRecogida);
         btnMarcarEntrega = findViewById(R.id.btnMarcarEntrega);
         map = findViewById(R.id.mapDetalle);
         map.setMultiTouchControls(true);
+
+        btnMarcarRecogida.setEnabled(false);
+        btnMarcarEntrega.setEnabled(false);
+        btnEmbalajeSeguro.setOnClickListener(v -> mostrarChecklistEmbalaje());
 
         // Obtener encomienda desde BD
         String guia = getIntent().getStringExtra("guia");
@@ -84,16 +94,10 @@ public class RecoleccionDetalleActivity extends AppCompatActivity {
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
         tvGuia.setText("Guía: " + encomienda.getNumeroGuia());
         tvRemitente.setText("Remitente: " + encomienda.getRemitenteNombre());
-        tvCelularRem.setText("Celular: " + encomienda.getRemitenteCelular());
-        tvDireccionRem.setText("Dirección: " + encomienda.getRemitenteDireccion());
+        tvDireccionRem.setText("Dirección remitente: " + encomienda.getRemitenteDireccion());
         tvDestinatario.setText("Destinatario: " + encomienda.getDestinatarioNombre());
-        tvCelularDest.setText("Celular: " + encomienda.getDestinatarioCelular());
-        tvDireccionDest.setText("Dirección: " + encomienda.getDestinatarioDireccion());
+        tvDireccionDest.setText("Dirección destinatario: " + encomienda.getDestinatarioDireccion());
         tvEstado.setText("Estado: " + encomienda.getEstado().name());
-        tvPeso.setText("Peso: " + encomienda.getPeso() + " kg");
-        tvPrecio.setText("Precio: $" + encomienda.getPrecio());
-        tvFechaSolicitud.setText("Fecha solicitud: " + sdf.format(encomienda.getFechaSolicitada()));
-        tvFechaEntrega.setText("Fecha estimada entrega: " + sdf.format(encomienda.getFechaEstimadaEntrega()));
 
         // Geocodificar direcciones y pintar ruta
         GeoPoint remitentePoint = geocode(encomienda.getRemitenteDireccion());
@@ -196,4 +200,70 @@ public class RecoleccionDetalleActivity extends AppCompatActivity {
         }
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_detalle, menu);
+        return true;
+    }
+    @Override public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.action_ver_caracteristicas) {
+            mostrarCaracteristicasEnvio(); return true;
+        } return super.onOptionsItemSelected(item); }
+
+    private void mostrarCaracteristicasEnvio() {
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+
+        String mensaje = "Guía: " + encomienda.getNumeroGuia() + "\n"
+                + "Celular remitente: " + encomienda.getRemitenteCelular() + "\n"
+                + "Celular destinatario: " + encomienda.getDestinatarioCelular() + "\n"
+                + "Peso: " + encomienda.getPeso() + " kg\n"
+                + "Precio: $" + encomienda.getPrecio() + "\n"
+                + "Fecha solicitud: " + sdf.format(encomienda.getFechaSolicitada()) + "\n"
+                + "Fecha estimada de entrega: " + sdf.format(encomienda.getFechaEstimadaEntrega());
+
+        new androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle("Características del envío")
+                .setMessage(mensaje)
+                .setPositiveButton("Cerrar", null)
+                .show();
+    }
+
+    private void mostrarChecklistEmbalaje() {
+        String[] pasos = {
+                "Caja en buen estado",
+                "Cinta de seguridad bien colocada",
+                "Etiqueta visible y legible",
+                "Protección interna adecuada"
+        };
+
+        boolean[] checkedItems = new boolean[pasos.length];
+
+        new androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle("Confirmar embalaje seguro")
+                .setMultiChoiceItems(pasos, checkedItems, (dialog, which, isChecked) -> {
+                    checkedItems[which] = isChecked;
+                })
+                .setPositiveButton("Confirmar", (dialog, which) -> {
+                    boolean todosMarcados = true;
+                    for (boolean checked : checkedItems) {
+                        if (!checked) {
+                            todosMarcados = false;
+                            break;
+                        }
+                    }
+                    if (todosMarcados) {
+                        Toast.makeText(this, "Embalaje confirmado", Toast.LENGTH_SHORT).show();
+                        btnMarcarRecogida.setEnabled(true);
+                        btnMarcarEntrega.setEnabled(true);
+                    } else {
+                        Toast.makeText(this, "Debe confirmar todos los pasos de embalaje", Toast.LENGTH_LONG).show();
+                    }
+                })
+                .setNegativeButton("Cancelar", null)
+                .show();
+    }
+
+
+
 }

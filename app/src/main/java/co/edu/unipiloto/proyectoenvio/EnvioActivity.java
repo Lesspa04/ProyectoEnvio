@@ -13,6 +13,12 @@ import android.os.Bundle;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.content.pm.PackageManager;
+
+
+import android.view.Menu;
+import android.view.MenuItem;
+import androidx.appcompat.widget.Toolbar;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -34,7 +40,7 @@ public class EnvioActivity extends AppCompatActivity {
     TextInputEditText edtCelularRemitente, edtDestinatario, edtCelularDestinatario, edtPeso;
     TextView tvDireccionRemitente, tvDireccionDestinatario, txtComprobante;
     Button btnSeleccionarDireccionRemitente, btnSeleccionarDireccionDestinatario;
-    Button btnRegistrarEnvio, btnDescargarPDF, btnPagar;
+    Button btnRegistrarEnvio, btnDescargarPDF, btnPagar, btnCompartir;
 
     double latRemitente = 0, lonRemitente = 0;
     double latDestinatario = 0, lonDestinatario = 0;
@@ -84,6 +90,13 @@ public class EnvioActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_envio);
 
+        androidx.appcompat.widget.Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
+        toolbar.setNavigationOnClickListener(v -> onBackPressed());
+
         dbHelper = new DatabaseHelper(this);
 
         // Bind Views
@@ -101,6 +114,8 @@ public class EnvioActivity extends AppCompatActivity {
         btnRegistrarEnvio = findViewById(R.id.btnRegistrarEnvio);
         btnDescargarPDF = findViewById(R.id.btnDescargarPDF);
         btnPagar = findViewById(R.id.btnPagar);
+        btnCompartir = findViewById(R.id.btnCompartir);
+
 
         // Listeners
         btnSeleccionarDireccionRemitente.setOnClickListener(v -> {
@@ -116,6 +131,7 @@ public class EnvioActivity extends AppCompatActivity {
         btnRegistrarEnvio.setOnClickListener(v -> validarEnvio());
         btnDescargarPDF.setOnClickListener(v -> solicitarUbicacionPDF());
         btnPagar.setOnClickListener(v -> simularPago());
+        btnCompartir.setOnClickListener(v -> compartirFormulario());
 
         // Cargar remitente desde BD
         SharedPreferences prefs = getSharedPreferences("sesion", MODE_PRIVATE);
@@ -136,6 +152,27 @@ public class EnvioActivity extends AppCompatActivity {
             cursor.close();
         }
     }
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_envio, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        if (id == R.id.action_notificacion) {
+            crearNotificacionEnvio();
+            return true;
+        } else if (id == android.R.id.home) {
+            onBackPressed();
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
 
     private void validarEnvio() {
         String celularRemitente = edtCelularRemitente.getText().toString().trim();
@@ -232,9 +269,78 @@ public class EnvioActivity extends AppCompatActivity {
         txtComprobante.setVisibility(TextView.VISIBLE);
         btnDescargarPDF.setVisibility(Button.VISIBLE);
         btnPagar.setVisibility(Button.VISIBLE);
+        btnCompartir.setVisibility(Button.VISIBLE);
 
         Toast.makeText(this, "Envío registrado correctamente", Toast.LENGTH_SHORT).show();
     }
+
+    private void crearNotificacionEnvio() {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            if (checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS)
+                    != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(new String[]{android.Manifest.permission.POST_NOTIFICATIONS}, 101);
+                return;
+            }
+        }
+        // Validar que haya un envío registrado
+        if (ultimoNumeroGuia == null || ultimoNumeroGuia.isEmpty()) {
+            Toast.makeText(this, "Debe registrar un envío antes de notificar.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Crear canal de notificación (solo se ejecuta una vez)
+        String channelId = "envio_channel";
+        String channelName = "Notificaciones de Envío";
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            android.app.NotificationChannel channel = new android.app.NotificationChannel(
+                    channelId,
+                    channelName,
+                    android.app.NotificationManager.IMPORTANCE_HIGH
+            );
+            android.app.NotificationManager manager = getSystemService(android.app.NotificationManager.class);
+            manager.createNotificationChannel(channel);
+        }
+
+        androidx.core.app.NotificationCompat.Builder builder =
+                new androidx.core.app.NotificationCompat.Builder(this, channelId)
+                        .setSmallIcon(R.drawable.ic_notification)
+                        .setContentTitle("Nuevo envío registrado")
+                        .setContentText("Guía " + ultimoNumeroGuia + " registrada exitosamente.")
+                        .setPriority(androidx.core.app.NotificationCompat.PRIORITY_HIGH)
+                        .setAutoCancel(true);
+
+        Intent intent = new Intent(this, RutasActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        android.app.PendingIntent pendingIntent = android.app.PendingIntent.getActivity(
+                this, 0, intent,
+                android.app.PendingIntent.FLAG_UPDATE_CURRENT | android.app.PendingIntent.FLAG_IMMUTABLE
+        );
+        builder.setContentIntent(pendingIntent);
+
+        // Mostrar notificación
+        androidx.core.app.NotificationManagerCompat notificationManager =
+                androidx.core.app.NotificationManagerCompat.from(this);
+        notificationManager.notify(new Random().nextInt(1000), builder.build());
+
+        Toast.makeText(this, "Notificación creada", Toast.LENGTH_SHORT).show();
+    }
+
+
+
+    private void compartirFormulario() {
+        if (comprobanteTexto.isEmpty()) {
+            Toast.makeText(this, "No hay información para compartir", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Intent intent = new Intent(Intent.ACTION_SEND);
+        intent.setType("text/plain");
+        intent.putExtra(Intent.EXTRA_SUBJECT, "Detalles del envío");
+        intent.putExtra(Intent.EXTRA_TEXT, comprobanteTexto);
+
+        startActivity(Intent.createChooser(intent, "Compartir vía"));
+    }
+
 
     private String obtenerDireccion(double lat, double lon) {
         Geocoder geocoder = new Geocoder(this, Locale.getDefault());
@@ -332,7 +438,6 @@ public class EnvioActivity extends AppCompatActivity {
             }
         }
     }
-
 
     private void simularPago() {
         Toast.makeText(this, "Simulación de pago realizada con éxito", Toast.LENGTH_LONG).show();

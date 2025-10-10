@@ -1,62 +1,80 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:padding="12dp">
+    android:layout_height="match_parent">
 
-    <LinearLayout
+    <!-- Toolbar superior -->
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbarDetalle"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:layout_height="?attr/actionBarSize"
+        android:background="?attr/colorPrimary"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        app:title="Detalle del envío"
+        app:titleTextColor="@android:color/white"
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
 
-        <!-- Número de guía -->
-        <TextView
-            android:id="@+id/tvGuia"
-            android:textStyle="bold"
-            android:textSize="16sp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+    <!-- Contenido principal -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="12dp">
 
-        <!-- Remitente -->
-        <TextView android:id="@+id/tvRemitente" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
-        <TextView android:id="@+id/tvCelularRem" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
-        <TextView android:id="@+id/tvDireccionRem" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
-
-        <!-- Destinatario -->
-        <TextView android:id="@+id/tvDestinatario" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
-        <TextView android:id="@+id/tvCelularDest" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
-        <TextView android:id="@+id/tvDireccionDest" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
-
-        <!-- Estado, peso y precio -->
-        <TextView android:id="@+id/tvEstado" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
-        <TextView android:id="@+id/tvPeso" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
-        <TextView android:id="@+id/tvPrecio" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
-
-        <!-- Fechas -->
-        <TextView android:id="@+id/tvFechaSolicitud" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
-        <TextView android:id="@+id/tvFechaEntrega" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
-
-        <!-- Mapa -->
-        <org.osmdroid.views.MapView
-            android:id="@+id/mapDetalle"
-            android:layout_width="match_parent"
-            android:layout_height="250dp"
-            android:layout_marginTop="8dp"/>
-
-        <!-- Botones -->
-        <Button
-            android:id="@+id/btnMarcarRecogida"
-            android:text="Recogida realizada"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"/>
+            android:orientation="vertical">
 
-        <Button
-            android:id="@+id/btnMarcarEntrega"
-            android:text="Entrega realizada"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"/>
+            <!-- Número de guía -->
+            <TextView
+                android:id="@+id/tvGuia"
+                android:textStyle="bold"
+                android:textSize="16sp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
 
-    </LinearLayout>
-</ScrollView>
+            <!-- Remitente -->
+            <TextView android:id="@+id/tvRemitente" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+            <TextView android:id="@+id/tvDireccionRem" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+
+            <!-- Destinatario -->
+            <TextView android:id="@+id/tvDestinatario" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+            <TextView android:id="@+id/tvDireccionDest" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+
+            <!-- Estado -->
+            <TextView android:id="@+id/tvEstado" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+
+            <!-- Mapa -->
+            <org.osmdroid.views.MapView
+                android:id="@+id/mapDetalle"
+                android:layout_width="match_parent"
+                android:layout_height="250dp"
+                android:layout_marginTop="8dp" />
+
+            <!-- Botones -->
+            <Button
+                android:id="@+id/btnEmbalajeSeguro"
+                android:text="Confirmar embalaje seguro"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp" />
+
+            <Button
+                android:id="@+id/btnMarcarRecogida"
+                android:text="Recogida realizada"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp" />
+
+            <Button
+                android:id="@+id/btnMarcarEntrega"
+                android:text="Entrega realizada"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp" />
+
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

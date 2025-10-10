@@ -42,7 +42,7 @@
             android:id="@+id/btnEnvio"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="📦 Registro de Envío"
+            android:text="📦 Registro de envío"
             android:layout_marginTop="6dp"
             android:textSize="14sp" />
 
@@ -50,7 +50,7 @@
             android:id="@+id/btnRutas"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="🗺️ Asignación de Rutas"
+            android:text="🗺️ Asignación de rutas"
             android:layout_marginTop="6dp"
             android:textSize="14sp" />
 
@@ -58,7 +58,7 @@
             android:id="@+id/btnRecolecciones"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="📥 Mis Recolecciones"
+            android:text="📥 Mis recolecciones"
             android:layout_marginTop="6dp"
             android:textSize="14sp" />
 
@@ -66,7 +66,7 @@
             android:id="@+id/btnSeguimiento"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="🔍 Seguimiento de Envío"
+            android:text="🔍 Seguimiento de envío"
             android:layout_marginTop="6dp"
             android:textSize="14sp" />
 
@@ -82,7 +82,7 @@
             android:id="@+id/btnMiPerfil"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="👤 Mi Perfil"
+            android:text="👤 Mi perfil"
             android:layout_marginTop="6dp"
             android:textSize="14sp" />
 
@@ -90,7 +90,7 @@
             android:id="@+id/btnCerrarSesion"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="🔓 Cerrar Sesión"
+            android:text="🔓 Cerrar sesión"
             android:layout_marginTop="10dp"
             android:textSize="14sp" />
 

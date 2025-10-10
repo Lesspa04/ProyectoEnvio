@@ -254,5 +254,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 COLUMN_GUIA + "=?", new String[]{guia});
         return filas > 0;
     }
+
+    public Cursor getEncomiendasPorEstado(String estado) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        return db.rawQuery("SELECT * FROM encomiendas WHERE estado = ?", new String[]{estado});
+    }
+
 }
 
