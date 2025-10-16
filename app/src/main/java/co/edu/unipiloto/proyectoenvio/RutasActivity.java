@@ -50,6 +50,7 @@ public class RutasActivity extends AppCompatActivity {
         Configuration.getInstance().setUserAgentValue(getPackageName());
         setContentView(R.layout.activity_rutas);
 
+
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null)
@@ -214,6 +215,7 @@ public class RutasActivity extends AppCompatActivity {
                     JSONArray coord = coordinates.getJSONArray(i);
                     ruta.addPoint(new GeoPoint(coord.getDouble(1), coord.getDouble(0)));
                 }
+                ruta.setColor(ContextCompat.getColor(RutasActivity.this, android.R.color.holo_blue_dark));
                 ruta.setWidth(6f);
                 return ruta;
 

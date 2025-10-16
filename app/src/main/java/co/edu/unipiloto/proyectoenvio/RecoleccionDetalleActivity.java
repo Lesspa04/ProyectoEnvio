@@ -3,6 +3,9 @@ package co.edu.unipiloto.proyectoenvio;
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.location.Address;
+import android.location.Geocoder;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.TextView;
@@ -14,6 +17,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.osmdroid.config.Configuration;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
@@ -22,15 +27,15 @@ import org.osmdroid.views.overlay.Polyline;
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-
-import android.location.Address;
-import android.location.Geocoder;
-
 
 import co.edu.unipiloto.proyectoenvio.database.DatabaseHelper;
 
@@ -99,18 +104,11 @@ public class RecoleccionDetalleActivity extends AppCompatActivity {
         tvDireccionDest.setText("Dirección destinatario: " + encomienda.getDestinatarioDireccion());
         tvEstado.setText("Estado: " + encomienda.getEstado().name());
 
-        // Geocodificar direcciones y pintar ruta
+        // Geocodificar direcciones
         GeoPoint remitentePoint = geocode(encomienda.getRemitenteDireccion());
         GeoPoint destinatarioPoint = geocode(encomienda.getDestinatarioDireccion());
 
         if (remitentePoint != null && destinatarioPoint != null) {
-            List<GeoPoint> ruta = new ArrayList<>();
-            ruta.add(remitentePoint);
-            ruta.add(destinatarioPoint);
-
-            map.getController().setZoom(12.0);
-            map.getController().setCenter(remitentePoint);
-
             // Marcadores
             Marker mRem = new Marker(map);
             mRem.setPosition(remitentePoint);
@@ -122,15 +120,13 @@ public class RecoleccionDetalleActivity extends AppCompatActivity {
             mDest.setTitle("Destinatario");
             map.getOverlays().add(mDest);
 
-            // Línea de ruta
-            Polyline poly = new Polyline();
-            poly.setPoints(ruta);
-            poly.setWidth(6f);
-            poly.setColor(0xFF0000FF);
-            map.getOverlayManager().add(poly);
+            map.getController().setZoom(12.0);
+            map.getController().setCenter(remitentePoint);
+
+            // Trazar ruta real entre ambos puntos (usando OSRM)
+            new ObtenerRutaTask().execute(remitentePoint, destinatarioPoint);
 
         } else {
-            // Centrar mapa por defecto si no se pudo geocodificar
             map.getController().setZoom(11.0);
             map.getController().setCenter(new GeoPoint(4.6482837, -74.0631496));
         }
@@ -191,7 +187,57 @@ public class RecoleccionDetalleActivity extends AppCompatActivity {
         return null;
     }
 
-    @Override
+    private class ObtenerRutaTask extends AsyncTask<GeoPoint, Void, Polyline> {
+        @Override
+        protected Polyline doInBackground(GeoPoint... puntos) {
+            try {
+                String urlStr = "https://router.project-osrm.org/route/v1/driving/"
+                        + puntos[0].getLongitude() + "," + puntos[0].getLatitude()
+                        + ";" + puntos[1].getLongitude() + "," + puntos[1].getLatitude()
+                        + "?overview=full&geometries=geojson";
+
+                URL url = new URL(urlStr);
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("GET");
+
+                BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                StringBuilder result = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) result.append(line);
+                reader.close();
+
+                JSONObject json = new JSONObject(result.toString());
+                JSONArray coordinates = json.getJSONArray("routes")
+                        .getJSONObject(0)
+                        .getJSONObject("geometry")
+                        .getJSONArray("coordinates");
+
+                Polyline ruta = new Polyline();
+                for (int i = 0; i < coordinates.length(); i++) {
+                    JSONArray coord = coordinates.getJSONArray(i);
+                    ruta.addPoint(new GeoPoint(coord.getDouble(1), coord.getDouble(0)));
+                }
+                ruta.setWidth(6f);
+                ruta.setColor(0xFF0000FF);
+                return ruta;
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
+        @Override
+        protected void onPostExecute(Polyline ruta) {
+            if (ruta != null) {
+                map.getOverlays().add(ruta);
+                map.invalidate();
+            } else {
+                Toast.makeText(RecoleccionDetalleActivity.this, "No se pudo obtener la ruta.", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+        @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         if (requestCode == 3001) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -263,7 +309,5 @@ public class RecoleccionDetalleActivity extends AppCompatActivity {
                 .setNegativeButton("Cancelar", null)
                 .show();
     }
-
-
 
 }

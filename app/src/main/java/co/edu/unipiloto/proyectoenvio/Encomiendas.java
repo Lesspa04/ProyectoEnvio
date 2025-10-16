@@ -83,7 +83,7 @@ public class Encomiendas {
         String destinatarioCelular = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_CELULAR_DESTINATARIO));
 
         String estadoStr = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_ESTADO));
-        Estado estado = Estado.valueOf(estadoStr);
+        Estado estado = Estado.valueOf(estadoStr.toUpperCase());
 
         long fechaSolicitudMillis = Long.parseLong(cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_FECHA_SOLICITUD)));
         long fechaEntregaMillis = Long.parseLong(cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_FECHA_ENTREGA)));

@@ -257,7 +257,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     public Cursor getEncomiendasPorEstado(String estado) {
         SQLiteDatabase db = this.getReadableDatabase();
-        return db.rawQuery("SELECT * FROM encomiendas WHERE estado = ?", new String[]{estado});
+        return db.rawQuery("SELECT * FROM encomiendas WHERE UPPER(estado) = UPPER(?)", new String[]{estado});
+
     }
 
 }

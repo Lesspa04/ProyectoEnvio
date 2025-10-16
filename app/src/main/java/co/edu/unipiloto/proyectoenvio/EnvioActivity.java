@@ -11,6 +11,7 @@ import android.location.Address;
 import android.location.Geocoder;
 import android.os.Bundle;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.content.pm.PackageManager;
@@ -325,8 +326,6 @@ public class EnvioActivity extends AppCompatActivity {
         Toast.makeText(this, "Notificación creada", Toast.LENGTH_SHORT).show();
     }
 
-
-
     private void compartirFormulario() {
         if (comprobanteTexto.isEmpty()) {
             Toast.makeText(this, "No hay información para compartir", Toast.LENGTH_SHORT).show();
@@ -440,6 +439,66 @@ public class EnvioActivity extends AppCompatActivity {
     }
 
     private void simularPago() {
-        Toast.makeText(this, "Simulación de pago realizada con éxito", Toast.LENGTH_LONG).show();
+        LinearLayout layout = new LinearLayout(this);
+        layout.setOrientation(LinearLayout.VERTICAL);
+        layout.setPadding(60, 50, 60, 20);
+        // Título
+        TextView titulo = new TextView(this);
+        titulo.setText("Pasarela de Pago");
+        titulo.setTextSize(20f);
+        titulo.setPadding(0, 0, 0, 20);
+        titulo.setTextAlignment(TextView.TEXT_ALIGNMENT_CENTER);
+
+        TextView lblTarjeta = new TextView(this);
+        lblTarjeta.setText("Número de tarjeta:");
+        lblTarjeta.setTextColor(Color.DKGRAY);
+
+        TextInputEditText txtTarjeta = new TextInputEditText(this);
+        txtTarjeta.setHint("1234 5678 9012 3456");
+        txtTarjeta.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);
+
+        TextView lblCVV = new TextView(this);
+        lblCVV.setText("CVV:");
+        lblCVV.setTextColor(Color.DKGRAY);
+
+        TextInputEditText txtCVV = new TextInputEditText(this);
+        txtCVV.setHint("123");
+        txtCVV.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);
+
+        TextView lblFecha = new TextView(this);
+        lblFecha.setText("Fecha de expiración:");
+        lblFecha.setTextColor(Color.DKGRAY);
+
+        TextInputEditText txtFecha = new TextInputEditText(this);
+        txtFecha.setHint("MM/AA");
+        txtFecha.setInputType(android.text.InputType.TYPE_CLASS_DATETIME);
+
+        layout.addView(titulo);
+        layout.addView(lblTarjeta);
+        layout.addView(txtTarjeta);
+        layout.addView(lblCVV);
+        layout.addView(txtCVV);
+        layout.addView(lblFecha);
+        layout.addView(txtFecha);
+
+        androidx.appcompat.app.AlertDialog dialog = new androidx.appcompat.app.AlertDialog.Builder(this)
+                .setView(layout)
+                .setCancelable(false)
+                .setPositiveButton("Pagar", (d, which) -> {
+                    String tarjeta = txtTarjeta.getText() != null ? txtTarjeta.getText().toString() : "";
+                    String cvv = txtCVV.getText() != null ? txtCVV.getText().toString() : "";
+                    String fecha = txtFecha.getText() != null ? txtFecha.getText().toString() : "";
+
+                    if (tarjeta.length() < 16 || cvv.length() < 3 || fecha.isEmpty()) {
+                        Toast.makeText(this, "Datos de pago inválidos", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(this, "Pago procesado con éxito", Toast.LENGTH_LONG).show();
+                    }
+                })
+                .setNegativeButton("Cancelar", (d, which) -> d.dismiss())
+                .create();
+
+        dialog.show();
+
     }
 }
