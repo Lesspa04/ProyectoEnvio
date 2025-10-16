@@ -35,7 +35,7 @@ import co.edu.unipiloto.proyectoenvio.loginSignup.LoginActivity;
 
 public class PerfilActivity extends AppCompatActivity {
 
-    TextInputEditText edtNombre, edtEmail, edtPassword;
+    TextInputEditText edtCelular, edtNombre, edtEmail, edtPassword;
     TextView tvDireccionSeleccionada;
     ImageView imgPerfil;
     Button btnGuardar, btnCambiarFoto, btnSeleccionarDireccion;
@@ -64,6 +64,7 @@ public class PerfilActivity extends AppCompatActivity {
 
         edtNombre = findViewById(R.id.edtPerfilNombre);
         edtEmail = findViewById(R.id.edtPerfilEmail);
+        edtCelular = findViewById(R.id.edtPerfilCelular);
         edtPassword = findViewById(R.id.edtPerfilPassword);
         tvDireccionSeleccionada = findViewById(R.id.tvDireccionSeleccionada);
         imgPerfil = findViewById(R.id.imgPerfil);
@@ -121,13 +122,19 @@ public class PerfilActivity extends AppCompatActivity {
             String email = edtEmail.getText().toString().trim();
             String password = edtPassword.getText().toString().trim();
             String direccion = direccionSeleccionada;
+            String celular = edtCelular.getText().toString().trim();
+
+            if (celular.isEmpty()) {
+                Toast.makeText(this, "Debe ingresar un número de celular", Toast.LENGTH_SHORT).show();
+                return;
+            }
 
             if (nombre.isEmpty() || email.isEmpty()) {
                 Toast.makeText(this, "Nombre y email no pueden estar vacíos", Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            boolean actualizado = dbHelper.actualizarUsuario(usuarioLogueado, nombre, email, password, direccion);
+            boolean actualizado = dbHelper.actualizarUsuario(usuarioLogueado, nombre, email, password, direccion, celular);
             if (actualizado) {
                 Toast.makeText(this, "Datos actualizados correctamente", Toast.LENGTH_SHORT).show();
             } else {
@@ -145,6 +152,7 @@ public class PerfilActivity extends AppCompatActivity {
             edtPassword.setText(cursor.getString(cursor.getColumnIndex(DatabaseHelper.COLUMN_PASSWORD)));
             direccionSeleccionada = cursor.getString(cursor.getColumnIndex(DatabaseHelper.COLUMN_DIRECCION));
             tvDireccionSeleccionada.setText(direccionSeleccionada);
+            edtCelular.setText(cursor.getString(cursor.getColumnIndex(DatabaseHelper.COLUMN_CELULAR)));
 
             // Cargar foto
             Bitmap foto = dbHelper.obtenerFotoDesdeCursor(cursor);

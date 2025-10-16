@@ -13,7 +13,7 @@ import java.io.ByteArrayOutputStream;
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "rimessa.db";
-    private static final int DATABASE_VERSION = 6; // subimos versión por el cambio
+    private static final int DATABASE_VERSION = 7; // subimos versión por el cambio
 
     // ====== TABLA USUARIOS ======
     public static final String TABLE_USERS = "usuarios";
@@ -27,6 +27,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String COLUMN_FECHA_NACIMIENTO = "fecha_nacimiento";
     public static final String COLUMN_GENERO = "genero";
     public static final String COLUMN_FOTO = "foto"; // BLOB
+    public static final String COLUMN_CELULAR = "celular";
+
     private static final String TABLE_CREATE_USERS =
             "CREATE TABLE " + TABLE_USERS + " (" +
                     COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
@@ -35,6 +37,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     COLUMN_EMAIL + " TEXT NOT NULL, " +
                     COLUMN_PASSWORD + " TEXT NOT NULL, " +
                     COLUMN_DIRECCION + " TEXT, " +
+                    COLUMN_CELULAR + " TEXT, " +
                     COLUMN_ROL + " TEXT NOT NULL, " +
                     COLUMN_FECHA_NACIMIENTO + " TEXT NOT NULL, " +
                     COLUMN_GENERO + " TEXT NOT NULL, " +
@@ -101,7 +104,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     // ====== MÉTODOS USUARIOS ======
     public boolean insertarUsuario(String nombre, String usuario, String email, String password,
-                                   String direccion, String rol, String fechaNacimiento, String genero) {
+                                   String direccion, String celular, String rol, String fechaNacimiento, String genero) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(COLUMN_NOMBRE, nombre);
@@ -109,6 +112,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put(COLUMN_EMAIL, email);
         values.put(COLUMN_PASSWORD, password);
         values.put(COLUMN_DIRECCION, direccion);
+        values.put(COLUMN_CELULAR, celular);
         values.put(COLUMN_ROL, rol);
         values.put(COLUMN_FECHA_NACIMIENTO, fechaNacimiento);
         values.put(COLUMN_GENERO, genero);
@@ -139,13 +143,25 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         );
     }
 
-    public boolean actualizarUsuario(String usuario, String nombre, String email, String password, String direccion) {
+    public String obtenerRolUsuario(String usuario) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery("SELECT " + COLUMN_ROL + " FROM " + TABLE_USERS + " WHERE " + COLUMN_USUARIO + "=?", new String[]{usuario});
+        String rol = null;
+        if (cursor.moveToFirst()) {
+            rol = cursor.getString(0);
+        }
+        cursor.close();
+        return rol;
+    }
+
+    public boolean actualizarUsuario(String usuario, String nombre, String email, String password, String direccion, String celular) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
 
         values.put(COLUMN_NOMBRE, nombre);
         values.put(COLUMN_EMAIL, email);
         values.put(COLUMN_DIRECCION, direccion);
+        values.put(COLUMN_CELULAR, celular);
 
         if (password != null && !password.isEmpty()) {
             values.put(COLUMN_PASSWORD, password);
@@ -221,6 +237,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 null, null,
                 COLUMN_FECHA_SOLICITUD + " DESC"
         );
+    }
+
+    public Cursor getTodasLasEncomiendas() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        return db.query(TABLE_ENCOMIENDAS, null, null, null, null, null, null);
     }
 
     public Cursor getEncomiendasPorRemitenteCelular(String celular) {

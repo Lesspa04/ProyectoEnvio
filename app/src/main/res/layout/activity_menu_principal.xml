@@ -4,95 +4,139 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true"
-    android:padding="16dp">
+    android:background="?android:attr/colorBackground">
 
     <LinearLayout
-        android:orientation="vertical"
-        android:gravity="center"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp"
+        android:gravity="center_horizontal">
 
-        <!-- Cabecera -->
+        <!-- 🟦 Header con nombre y rol -->
         <LinearLayout
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:background="@android:color/white"
+            android:elevation="3dp"
+            android:padding="16dp"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:layout_marginBottom="24dp">
+            android:layout_marginBottom="24dp"
+            android:backgroundTint="?attr/colorSurface">
 
             <ImageView
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:src="@mipmap/ic_launcher"
-                android:contentDescription="Logo"
-                android:layout_marginEnd="8dp" />
+                android:id="@+id/imgFotoPerfil"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:src="@mipmap/ic_launcher_round"
+                android:scaleType="centerCrop"
+                android:layout_marginEnd="12dp"
+                android:background="@drawable/circle_bg"
+                android:contentDescription="Foto de perfil" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_weight="1">
+
+                <TextView
+                    android:id="@+id/tvNombreUsuario"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Usuario"
+                    android:textStyle="bold"
+                    android:textSize="18sp"
+                    android:textColor="?attr/colorOnSurface" />
+
+                <TextView
+                    android:id="@+id/tvRolUsuario"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Rol: —"
+                    android:textSize="14sp"
+                    android:textColor="?attr/colorOnSurfaceVariant" />
+            </LinearLayout>
 
             <TextView
+                android:id="@+id/btnOpciones"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Menú Principal"
-                android:textSize="20sp"
-                android:textStyle="bold"
-                android:fontFamily="sans-serif-medium"
-                android:textColor="?android:textColorPrimary" />
+                android:text="⋮"
+                android:textSize="28sp"
+                android:padding="8dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:gravity="center" />
         </LinearLayout>
 
-        <!-- Botones del menú -->
-        <Button
-            android:id="@+id/btnEnvio"
+        <!-- 🟨 Título -->
+        <TextView
+            android:id="@+id/appName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Rimessa"
+            android:textSize="32sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="24dp" />
+
+        <!-- 🟩 BOTONES CON ÍCONOS PERSONALIZADOS -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="📦 Registro de envío"
-            android:layout_marginTop="6dp"
-            android:textSize="14sp" />
+            android:orientation="vertical"
+            android:gravity="center_horizontal">
 
-        <Button
-            android:id="@+id/btnRutas"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="🗺️ Asignación de rutas"
-            android:layout_marginTop="6dp"
-            android:textSize="14sp" />
+            <Button
+                android:id="@+id/btnEnvio"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:drawableLeft="@drawable/ic_package"
+                android:text="Registrar Envío"
+                android:textAllCaps="false"
+                android:textSize="16sp"
+                android:layout_marginHorizontal="48dp"
+                android:layout_marginVertical="8dp"
+                android:paddingVertical="10dp" />
 
-        <Button
-            android:id="@+id/btnRecolecciones"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="📥 Mis recolecciones"
-            android:layout_marginTop="6dp"
-            android:textSize="14sp" />
+            <Button
+                android:id="@+id/btnRutas"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:drawableLeft="@drawable/ic_ruta"
+                android:text="Asignar Rutas"
+                android:textAllCaps="false"
+                android:textSize="16sp"
+                android:layout_marginHorizontal="48dp"
+                android:layout_marginVertical="8dp"
+                android:paddingVertical="10dp" />
 
-        <Button
-            android:id="@+id/btnSeguimiento"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="🔍 Seguimiento de envío"
-            android:layout_marginTop="6dp"
-            android:textSize="14sp" />
+            <Button
+                android:id="@+id/btnRecolecciones"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:drawableLeft="@drawable/ic_recoleccion"
+                android:text="Mis Recolecciones"
+                android:textAllCaps="false"
+                android:textSize="16sp"
+                android:layout_marginHorizontal="48dp"
+                android:layout_marginVertical="8dp"
+                android:paddingVertical="10dp"  />
 
-        <!-- Línea divisoria -->
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="?attr/colorPrimary"
-            android:layout_marginTop="20dp"
-            android:layout_marginBottom="16dp" />
+            <Button
+                android:id="@+id/btnSeguimiento"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:drawableLeft="@drawable/ic_seguimiento"
+                android:text="Seguimiento"
+                android:textAllCaps="false"
+                android:textSize="16sp"
+                android:layout_marginHorizontal="48dp"
+                android:layout_marginVertical="8dp"
+                android:paddingVertical="10dp" />
 
-        <Button
-            android:id="@+id/btnMiPerfil"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="👤 Mi perfil"
-            android:layout_marginTop="6dp"
-            android:textSize="14sp" />
+        </LinearLayout>
 
-        <Button
-            android:id="@+id/btnCerrarSesion"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="🔓 Cerrar sesión"
-            android:layout_marginTop="10dp"
-            android:textSize="14sp" />
 
     </LinearLayout>
 </ScrollView>

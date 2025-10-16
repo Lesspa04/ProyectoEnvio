@@ -27,19 +27,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
-        <!-- Celular remitente -->
-        <com.google.android.material.textfield.TextInputLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Celular del remitente">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/edtCelularRemitente"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="phone"/>
-        </com.google.android.material.textfield.TextInputLayout>
-
         <!-- Dirección remitente (desde mapa) -->
         <TextView
             android:id="@+id/tvDireccionRemitente"

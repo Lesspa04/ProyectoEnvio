@@ -4,10 +4,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuItem;
-import androidx.appcompat.widget.Toolbar;
-
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -23,6 +19,7 @@ public class MisRecoleccionesActivity extends AppCompatActivity {
     private RecoleccionesAdapter adapter;
     private DatabaseHelper dbHelper;
     private String usuarioActual = "";
+    private String rolUsuario = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,15 +38,15 @@ public class MisRecoleccionesActivity extends AppCompatActivity {
         rvRecolecciones = findViewById(R.id.rvRecolecciones);
         rvRecolecciones.setLayoutManager(new LinearLayoutManager(this));
 
-        // Obtener usuario actual de la sesión
+        // Obtener usuario actual y su rol desde la sesión
         SharedPreferences prefs = getSharedPreferences("sesion", MODE_PRIVATE);
         usuarioActual = prefs.getString("usuario", null);
+        rolUsuario = dbHelper.obtenerRolUsuario(usuarioActual);
 
-        // Cargar encomiendas del usuario
-        List<Encomiendas> lista = cargarEncomiendasPorUsuario(usuarioActual);
+        // Cargar encomiendas según el rol
+        List<Encomiendas> lista = cargarEncomiendasSegunRol(usuarioActual, rolUsuario);
 
         adapter = new RecoleccionesAdapter(lista, e -> {
-            // Abrir detalle de la encomienda
             Intent i = new Intent(MisRecoleccionesActivity.this, RecoleccionDetalleActivity.class);
             i.putExtra("guia", e.getNumeroGuia());
             startActivity(i);
@@ -61,24 +58,31 @@ public class MisRecoleccionesActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        // Refrescar lista desde la BD
-        List<Encomiendas> lista = cargarEncomiendasPorUsuario(usuarioActual);
+        List<Encomiendas> lista = cargarEncomiendasSegunRol(usuarioActual, rolUsuario);
         adapter.updateData(lista);
     }
 
     /**
-     * Carga todas las encomiendas del usuario actual
+     * Carga las encomiendas dependiendo del rol del usuario.
+     * - Si es ciudadano → solo las suyas
+     * - Si es recolector → todas
      */
-    private List<Encomiendas> cargarEncomiendasPorUsuario(String usuario) {
+    private List<Encomiendas> cargarEncomiendasSegunRol(String usuario, String rol) {
         List<Encomiendas> lista = new ArrayList<>();
         if (usuario == null) return lista;
 
-        // Obtener cursor filtrando por remitente (usuario actual)
-        Cursor cursor = dbHelper.getEncomiendasPorUsuario(usuario);
+        Cursor cursor;
+
+        if ("recolector de encomiendas".toLowerCase().equalsIgnoreCase(rol)) {
+            // 🔹 Recolector ve todas las encomiendas
+            cursor = dbHelper.getTodasLasEncomiendas();
+        } else {
+            // 🔹 Ciudadano ve solo las suyas
+            cursor = dbHelper.getEncomiendasPorUsuario(usuario);
+        }
 
         if (cursor != null && cursor.moveToFirst()) {
             do {
-                // Reconstruye el objeto Encomiendas desde el cursor
                 Encomiendas e = Encomiendas.fromCursor(cursor);
                 lista.add(e);
             } while (cursor.moveToNext());
@@ -86,5 +90,4 @@ public class MisRecoleccionesActivity extends AppCompatActivity {
         }
         return lista;
     }
-
 }

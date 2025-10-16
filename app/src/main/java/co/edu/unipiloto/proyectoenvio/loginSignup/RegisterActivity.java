@@ -23,7 +23,7 @@ import co.edu.unipiloto.proyectoenvio.R;
 
 public class RegisterActivity extends AppCompatActivity {
 
-    TextInputEditText edtNombre, edtUsuario, edtEmail, edtPassword, edtConfirmPassword;
+    TextInputEditText edtCelular, edtNombre, edtUsuario, edtEmail, edtPassword, edtConfirmPassword;
     TextView tvDireccionSeleccionada;
     Spinner spinnerRol;
     RadioGroup radioGroupGenero;
@@ -50,6 +50,7 @@ public class RegisterActivity extends AppCompatActivity {
         edtNombre = findViewById(R.id.edtNombre);
         edtUsuario = findViewById(R.id.edtUsuario);
         edtEmail = findViewById(R.id.edtEmail);
+        edtCelular = findViewById(R.id.edtCelular);
         edtPassword = findViewById(R.id.edtPassword);
         edtConfirmPassword = findViewById(R.id.edtConfirmPassword);
 
@@ -117,6 +118,17 @@ public class RegisterActivity extends AppCompatActivity {
         String email = edtEmail.getText().toString().trim();
         String password = edtPassword.getText().toString().trim();
         String confirmPass = edtConfirmPassword.getText().toString().trim();
+        String celular = edtCelular.getText().toString().trim();
+
+        if (celular.isEmpty()) {
+            Toast.makeText(this, "Debe ingresar un número de celular", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (!celular.matches("^\\+?\\d{10,13}$")) {
+            Toast.makeText(this, "Número de celular inválido", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
         if (nombre.isEmpty() || usuario.isEmpty() || email.isEmpty() ||
                 password.isEmpty() || confirmPass.isEmpty()) {
@@ -175,7 +187,7 @@ public class RegisterActivity extends AppCompatActivity {
 
         // Intentamos insertar el usuario en la base
         boolean inserto = dbHelper.insertarUsuario(
-                nombre, usuario, email, password, direccionSeleccionada, rol,
+                nombre, usuario, email, password, direccionSeleccionada, celular, rol,
                 btnFechaNacimiento.getText().toString(), genero);
 
         if (inserto) {

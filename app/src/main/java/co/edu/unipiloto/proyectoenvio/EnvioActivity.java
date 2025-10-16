@@ -38,7 +38,7 @@ import co.edu.unipiloto.proyectoenvio.database.DatabaseHelper;
 
 public class EnvioActivity extends AppCompatActivity {
 
-    TextInputEditText edtCelularRemitente, edtDestinatario, edtCelularDestinatario, edtPeso;
+    TextInputEditText edtDestinatario, edtCelularDestinatario, edtPeso;
     TextView tvDireccionRemitente, tvDireccionDestinatario, txtComprobante;
     Button btnSeleccionarDireccionRemitente, btnSeleccionarDireccionDestinatario;
     Button btnRegistrarEnvio, btnDescargarPDF, btnPagar, btnCompartir;
@@ -51,6 +51,7 @@ public class EnvioActivity extends AppCompatActivity {
 
     private DatabaseHelper dbHelper;
     private String remitenteNombre = "";
+    private String celularRemitente = "";
     private String usuarioActual = "";
 
     private final int REQUEST_CREATE_PDF = 1001;
@@ -101,7 +102,6 @@ public class EnvioActivity extends AppCompatActivity {
         dbHelper = new DatabaseHelper(this);
 
         // Bind Views
-        edtCelularRemitente = findViewById(R.id.edtCelularRemitente);
         edtDestinatario = findViewById(R.id.edtDestinatario);
         edtCelularDestinatario = findViewById(R.id.edtCelularDestinatario);
         edtPeso = findViewById(R.id.edtPeso);
@@ -141,6 +141,7 @@ public class EnvioActivity extends AppCompatActivity {
             Cursor cursor = dbHelper.obtenerUsuario(usuarioActual);
             if (cursor.moveToFirst()) {
                 remitenteNombre = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_NOMBRE));
+                celularRemitente = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_CELULAR));
                 int idxDir = cursor.getColumnIndex(DatabaseHelper.COLUMN_DIRECCION);
                 if (idxDir != -1) {
                     String dirGuardada = cursor.getString(idxDir);
@@ -176,17 +177,12 @@ public class EnvioActivity extends AppCompatActivity {
 
 
     private void validarEnvio() {
-        String celularRemitente = edtCelularRemitente.getText().toString().trim();
         String destinatario = edtDestinatario.getText().toString().trim();
         String celularDestinatario = edtCelularDestinatario.getText().toString().trim();
         String pesoStr = edtPeso.getText().toString().trim();
 
         if (remitenteNombre.isEmpty()) {
             Toast.makeText(this, "Error: usuario remitente no identificado", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        if (!celularRemitente.matches("\\d{10}")) {
-            Toast.makeText(this, "Ingrese un celular válido del remitente", Toast.LENGTH_SHORT).show();
             return;
         }
         if (!destinatario.matches("[a-zA-Z ]+")) {

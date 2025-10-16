@@ -77,6 +77,20 @@
                 android:textSize="14sp"/>
         </com.google.android.material.textfield.TextInputLayout>
 
+        <!-- Celular -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:hint="Celular"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp">
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/edtCelular"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="phone"
+                android:textSize="14sp"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
         <!-- Dirección física -->
         <Button
             android:id="@+id/btnSeleccionarDireccion"

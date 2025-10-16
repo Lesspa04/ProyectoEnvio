@@ -1,6 +1,7 @@
 package co.edu.unipiloto.proyectoenvio;
 
 import android.Manifest;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.location.Address;
@@ -80,6 +81,39 @@ public class RecoleccionDetalleActivity extends AppCompatActivity {
         btnMarcarEntrega = findViewById(R.id.btnMarcarEntrega);
         map = findViewById(R.id.mapDetalle);
         map.setMultiTouchControls(true);
+
+        // --- 🔹 Control de botones según el rol del usuario ---
+        SharedPreferences prefs = getSharedPreferences("sesion", MODE_PRIVATE);
+        String usuario = prefs.getString("usuario", null);
+        String rolUsuario = dbHelper.obtenerRolUsuario(usuario);
+
+// Por defecto ocultamos los botones hasta saber el rol
+        btnEmbalajeSeguro.setVisibility(Button.GONE);
+        btnMarcarRecogida.setVisibility(Button.GONE);
+        btnMarcarEntrega.setVisibility(Button.GONE);
+
+// Mostramos según el rol
+        if (rolUsuario != null) {
+            switch (rolUsuario.toLowerCase()) {
+                case "recolector de encomiendas":
+                    // El recolector puede embalar, marcar recogido y entregado
+                    btnEmbalajeSeguro.setVisibility(Button.VISIBLE);
+                    btnMarcarRecogida.setVisibility(Button.VISIBLE);
+                    btnMarcarEntrega.setVisibility(Button.VISIBLE);
+                    break;
+
+                case "asignador de rutas":
+                    // El asignador no debería modificar estados, solo visualizar
+                    // (dejamos los botones ocultos)
+                    break;
+
+                case "ciudadano":
+                default:
+                    // El ciudadano no puede modificar el estado ni embalar
+                    // (dejamos ocultos)
+                    break;
+            }
+        }
 
         btnMarcarRecogida.setEnabled(false);
         btnMarcarEntrega.setEnabled(false);
