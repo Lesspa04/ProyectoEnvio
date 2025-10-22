@@ -6,5 +6,15 @@
         <item>Recolector de encomiendas</item>
         <item>Asignador de rutas</item>
     </string-array>
+
+    <string name="estado_prompt">Selecciona un estado</string>
+
+    <string-array name="estados_encomienda">
+        <item>Todos</item>
+        <item>SOLICITADO</item>
+        <item>RECOGIDO</item>
+        <item>ENTREGADO</item>
+    </string-array>
+
 </resources>
 

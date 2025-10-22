@@ -1,10 +1,14 @@
 package co.edu.unipiloto.proyectoenvio;
 
+import android.app.DatePickerDialog;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.view.Menu;
@@ -15,6 +19,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -23,9 +28,11 @@ import co.edu.unipiloto.proyectoenvio.database.DatabaseHelper;
 
 public class SeguimientoActivity extends AppCompatActivity {
 
-    EditText edtBuscarGuia;
-    Button btnBuscarGuia, btnListarPorUsuario;
+    EditText edtBuscarGuia, edtPrecioMin, edtPrecioMax, edtFechaFiltro;
+    Button btnBuscarGuia, btnListarPorUsuario, btnAplicarFiltros;
     TextView tvResultado;
+    Spinner spinnerEstado;
+    LinearLayout layoutFiltros;
 
     private DatabaseHelper dbHelper;
 private String usuario = "";
@@ -47,8 +54,71 @@ private String usuario = "";
 
         edtBuscarGuia = findViewById(R.id.edtBuscarGuia);
         btnBuscarGuia = findViewById(R.id.btnBuscarGuia);
-        btnListarPorUsuario = findViewById(R.id.btnListarPorUsuario); // Reusa el botón
+        btnListarPorUsuario = findViewById(R.id.btnListarPorUsuario);
         tvResultado = findViewById(R.id.tvResultado);
+        layoutFiltros = findViewById(R.id.layoutFiltros);
+        spinnerEstado = findViewById(R.id.spinnerEstado);
+        edtPrecioMin = findViewById(R.id.edtPrecioMin);
+        edtPrecioMax = findViewById(R.id.edtPrecioMax);
+        edtFechaFiltro = findViewById(R.id.edtFechaFiltro);
+        btnAplicarFiltros = findViewById(R.id.btnAplicarFiltros);
+
+        edtFechaFiltro.setFocusable(false);
+        edtFechaFiltro.setClickable(true);
+
+        edtFechaFiltro.setOnClickListener(v -> {
+            // Obtener fecha actual
+            final Calendar calendar = Calendar.getInstance();
+            int year = calendar.get(Calendar.YEAR);
+            int month = calendar.get(Calendar.MONTH);
+            int day = calendar.get(Calendar.DAY_OF_MONTH);
+
+            DatePickerDialog datePicker = new DatePickerDialog(
+                    SeguimientoActivity.this,
+                    (view, year1, month1, dayOfMonth) -> {
+                        // Formatear fecha seleccionada (yyyy-MM-dd)
+                        String fechaSeleccionada = String.format(Locale.getDefault(), "%04d-%02d-%02d", year1, month1 + 1, dayOfMonth);
+                        edtFechaFiltro.setText(fechaSeleccionada);
+                    },
+                    year, month, day
+            );
+            datePicker.show();
+        });
+
+        btnAplicarFiltros.setOnClickListener(v -> {
+            SharedPreferences prefs = getSharedPreferences("sesion", MODE_PRIVATE);
+            usuario = prefs.getString("usuario", null);
+            if (usuario == null) {
+                Toast.makeText(this, "No hay usuario logueado", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            String estadoSeleccionado = spinnerEstado.getSelectedItem().toString();
+            if (estadoSeleccionado.equalsIgnoreCase("Todos")) {
+                estadoSeleccionado = null; // para que no filtre por estado
+            }
+
+            Double precioMin = null;
+            Double precioMax = null;
+            try {
+                if (!edtPrecioMin.getText().toString().trim().isEmpty()) {
+                    precioMin = Double.parseDouble(edtPrecioMin.getText().toString());
+                }
+                if (!edtPrecioMax.getText().toString().trim().isEmpty()) {
+                    precioMax = Double.parseDouble(edtPrecioMax.getText().toString());
+                }
+            } catch (NumberFormatException e) {
+                Toast.makeText(this, "Verifica los precios ingresados", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            String fechaSeleccionada = edtFechaFiltro.getText().toString().trim();
+            if (fechaSeleccionada.isEmpty()) {
+                fechaSeleccionada = null;
+            }
+
+            cargarHistorial(usuario, estadoSeleccionado, precioMin, precioMax, fechaSeleccionada);
+        });
 
         // Buscar guía específica
         btnBuscarGuia.setOnClickListener(v -> {
@@ -70,32 +140,72 @@ private String usuario = "";
 
         // Listar por usuario
         btnListarPorUsuario.setOnClickListener(v -> {
-            // Obtener usuario actual de la sesión
             SharedPreferences prefs = getSharedPreferences("sesion", MODE_PRIVATE);
             usuario = prefs.getString("usuario", null);
-            Cursor cursor = dbHelper.getEncomiendasPorUsuario(usuario);
-
-            List<Encomiendas> list = new ArrayList<>();
-            if (cursor != null && cursor.moveToFirst()) {
-                do {
-                    list.add(cursorToEncomienda(cursor));
-                } while (cursor.moveToNext());
-                cursor.close();
+            if (usuario == null) {
+                Toast.makeText(this, "No hay usuario logueado", Toast.LENGTH_SHORT).show();
+                return;
             }
-
-            if (list.isEmpty()) {
-                tvResultado.setText("No hay envíos asociados al usuario " + usuario);
-            } else {
-                StringBuilder sb = new StringBuilder();
-                for (Encomiendas e : list) {
-                    sb.append(e.getNumeroGuia())
-                            .append(" - ")
-                            .append(e.getEstado().name())
-                            .append("\n");
-                }
-                tvResultado.setText(sb.toString());
-            }
+            layoutFiltros.setVisibility(View.VISIBLE); // mostrar filtros
+            cargarHistorial(usuario, null, null, null, null);
         });
+        btnListarPorUsuario.setOnClickListener(v -> {
+            SharedPreferences prefs = getSharedPreferences("sesion", MODE_PRIVATE);
+            usuario = prefs.getString("usuario", null);
+            if (usuario == null) {
+                Toast.makeText(this, "No hay usuario logueado", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            layoutFiltros.setVisibility(View.VISIBLE); // mostrar filtros
+            cargarHistorial(usuario, null, null, null, null);
+        });
+    }
+
+
+    private void cargarHistorial(String usuario, String estado, Double precioMin, Double precioMax, String fechaStr) {
+        Cursor cursor = dbHelper.getEncomiendasPorUsuario(usuario);
+        List<Encomiendas> list = new ArrayList<>();
+
+        if (cursor != null && cursor.moveToFirst()) {
+            do {
+                Encomiendas e = cursorToEncomienda(cursor);
+
+                boolean coincide = true;
+
+                if (estado != null && !e.getEstado().name().equalsIgnoreCase(estado))
+                    coincide = false;
+
+                if (precioMin != null && e.getPrecio() < precioMin)
+                    coincide = false;
+
+                if (precioMax != null && e.getPrecio() > precioMax)
+                    coincide = false;
+
+                if (fechaStr != null && !fechaStr.isEmpty()) {
+                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+                    String fechaEncomienda = sdf.format(e.getFechaSolicitada());
+                    if (!fechaEncomienda.equals(fechaStr))
+                        coincide = false;
+                }
+
+                if (coincide) list.add(e);
+            } while (cursor.moveToNext());
+            cursor.close();
+        }
+
+        if (list.isEmpty()) {
+            tvResultado.setText("No hay envíos con los filtros seleccionados.");
+        } else {
+            StringBuilder sb = new StringBuilder();
+            for (Encomiendas e : list) {
+                sb.append("Guía: ").append(e.getNumeroGuia())
+                        .append(" | Estado: ").append(e.getEstado().name())
+                        .append(" | Precio: $").append(e.getPrecio())
+                        .append(" | Fecha: ").append(new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(e.getFechaSolicitada()))
+                        .append("\n");
+            }
+            tvResultado.setText(sb.toString());
+        }
     }
 
     // Convierte una fila del cursor en objeto Encomiendas

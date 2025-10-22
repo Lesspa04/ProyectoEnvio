@@ -50,6 +50,7 @@
         <activity android:name=".SeguimientoActivity" android:exported="false" />
         <activity android:name=".MapaDireccionActivity" android:exported="false"/>
         <activity android:name=".RecoleccionDetalleActivity" android:exported="false"/>
+        <activity android:name=".EstadisticasActivity" android:exported="false"/>
         <activity android:name=".perfil.PerfilActivity" android:exported="false"/>
         <activity android:name=".menus.MenuPrincipalActivity" android:exported="false" />
 

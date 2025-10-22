@@ -14,6 +14,7 @@ import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
 
 import co.edu.unipiloto.proyectoenvio.EnvioActivity;
+import co.edu.unipiloto.proyectoenvio.EstadisticasActivity;
 import co.edu.unipiloto.proyectoenvio.MisRecoleccionesActivity;
 import co.edu.unipiloto.proyectoenvio.R;
 import co.edu.unipiloto.proyectoenvio.RutasActivity;
@@ -24,7 +25,7 @@ import co.edu.unipiloto.proyectoenvio.perfil.PerfilActivity;
 
 public class MenuPrincipalActivity extends AppCompatActivity {
 
-    Button btnEnvio, btnRutas, btnRecolecciones, btnSeguimiento;
+    Button btnEnvio, btnRutas, btnRecolecciones, btnSeguimiento, btnEstadisticas;
     DatabaseHelper dbHelper;
 
     @Override
@@ -57,6 +58,7 @@ public class MenuPrincipalActivity extends AppCompatActivity {
         btnRutas = findViewById(R.id.btnRutas);
         btnRecolecciones = findViewById(R.id.btnRecolecciones);
         btnSeguimiento = findViewById(R.id.btnSeguimiento);
+        btnEstadisticas = findViewById(R.id.btnEstadisticas);
 
 // Inicializar vistas
         ImageView imgFotoPerfil = findViewById(R.id.imgFotoPerfil);
@@ -126,6 +128,7 @@ public class MenuPrincipalActivity extends AppCompatActivity {
         btnRutas.setOnClickListener(v -> startActivity(new Intent(this, RutasActivity.class)));
         btnRecolecciones.setOnClickListener(v -> startActivity(new Intent(this, MisRecoleccionesActivity.class)));
         btnSeguimiento.setOnClickListener(v -> startActivity(new Intent(this, SeguimientoActivity.class)));
+        btnEstadisticas.setOnClickListener(v -> {Intent intent = new Intent(this, EstadisticasActivity.class);startActivity(intent);});
 
     }
 
@@ -143,6 +146,7 @@ public class MenuPrincipalActivity extends AppCompatActivity {
                 btnRecolecciones.setVisibility(Button.VISIBLE);
                 btnSeguimiento.setVisibility(Button.VISIBLE);
                 btnRecolecciones.setText("Mis solicitudes");
+                btnEstadisticas.setVisibility(Button.VISIBLE);
                 break;
 
             case "recolector de encomiendas":
@@ -150,10 +154,13 @@ public class MenuPrincipalActivity extends AppCompatActivity {
                 btnRecolecciones.setVisibility(Button.VISIBLE);
                 btnSeguimiento.setVisibility(Button.VISIBLE);
                 btnRecolecciones.setText("Mis recolecciones");
+                btnEstadisticas.setVisibility(Button.VISIBLE);
+
                 break;
 
             case "asignador de rutas":
                 btnRutas.setVisibility(Button.VISIBLE);
+                btnEstadisticas.setVisibility(Button.VISIBLE);
                 break;
         }
 

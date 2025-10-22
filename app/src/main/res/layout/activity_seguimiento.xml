@@ -31,10 +31,70 @@
 
     <Button
         android:id="@+id/btnListarPorUsuario"
-        android:text="Listar por mi usuario"
+        android:text="Historial de envíos"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp" />
+
+    <LinearLayout
+        android:id="@+id/layoutFiltros"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:visibility="gone">
+
+        <!-- Filtro por estado -->
+        <Spinner
+            android:id="@+id/spinnerEstado"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:entries="@array/estados_encomienda"
+            android:prompt="@string/estado_prompt"
+            android:layout_marginTop="5dp" />
+
+        <!-- Filtro por rango de precios -->
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp">
+
+            <EditText
+                android:id="@+id/edtPrecioMin"
+                android:hint="Precio mínimo"
+                android:inputType="numberDecimal"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content" />
+
+            <EditText
+                android:id="@+id/edtPrecioMax"
+                android:hint="Precio máximo"
+                android:inputType="numberDecimal"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="5dp" />
+        </LinearLayout>
+
+        <!-- Filtro por fecha solicitada -->
+        <EditText
+            android:id="@+id/edtFechaFiltro"
+            android:hint="Fecha solicitada (yyyy-MM-dd)"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:focusable="false" />
+
+        <!-- Botón aplicar filtro -->
+        <Button
+            android:id="@+id/btnAplicarFiltros"
+            android:text="Aplicar filtros"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"/>
+    </LinearLayout>
 
     <TextView
         android:id="@+id/tvResultado"

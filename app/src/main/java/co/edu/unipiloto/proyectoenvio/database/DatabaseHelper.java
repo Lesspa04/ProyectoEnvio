@@ -282,5 +282,16 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     }
 
+    public int contarUsuariosPorRol(String rol) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery(
+                "SELECT COUNT(*) FROM usuarios WHERE LOWER(TRIM(rol)) = LOWER(TRIM(?))",
+                new String[]{rol}
+        );
+        int count = 0;
+        if (cursor.moveToFirst()) count = cursor.getInt(0);
+        cursor.close();
+        return count;
+    }
 }
 
