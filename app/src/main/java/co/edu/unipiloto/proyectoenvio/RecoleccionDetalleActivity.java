@@ -8,7 +8,9 @@ import android.location.Address;
 import android.location.Geocoder;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
+import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.view.Menu;
@@ -42,13 +44,14 @@ import co.edu.unipiloto.proyectoenvio.database.DatabaseHelper;
 
 public class RecoleccionDetalleActivity extends AppCompatActivity {
 
-    TextView tvGuia, tvRemitente, tvCelularRem, tvDireccionRem,
-            tvDestinatario, tvCelularDest, tvDireccionDest,
-            tvEstado, tvPeso, tvPrecio, tvFechaSolicitud, tvFechaEntrega;
+    TextView tvGuia, tvRemitente, tvDireccionRem,
+            tvDestinatario, tvDireccionDest,
+            tvEstado;
 
-    Button btnMarcarRecogida, btnMarcarEntrega, btnEmbalajeSeguro;
+    Button btnMarcarRecogida, btnMarcarEntrega, btnEmbalajeSeguro, btnEnviarCalificacion;
 
     MapView map;
+    RatingBar ratingBar;
     MyLocationNewOverlay myLocationOverlay;
     Encomiendas encomienda;
     DatabaseHelper dbHelper;
@@ -75,10 +78,12 @@ public class RecoleccionDetalleActivity extends AppCompatActivity {
         tvDestinatario = findViewById(R.id.tvDestinatario);
         tvDireccionDest = findViewById(R.id.tvDireccionDest);
         tvEstado = findViewById(R.id.tvEstado);
-
         btnEmbalajeSeguro = findViewById(R.id.btnEmbalajeSeguro);
         btnMarcarRecogida = findViewById(R.id.btnMarcarRecogida);
         btnMarcarEntrega = findViewById(R.id.btnMarcarEntrega);
+        ratingBar = findViewById(R.id.ratingBar);
+        btnEnviarCalificacion = findViewById(R.id.btnEnviarCalificacion);
+
         map = findViewById(R.id.mapDetalle);
         map.setMultiTouchControls(true);
 
@@ -109,8 +114,7 @@ public class RecoleccionDetalleActivity extends AppCompatActivity {
 
                 case "ciudadano":
                 default:
-                    // El ciudadano no puede modificar el estado ni embalar
-                    // (dejamos ocultos)
+                    // El ciudadano no puede modificar el estado ni embalar, puede calificar
                     break;
             }
         }
@@ -118,6 +122,7 @@ public class RecoleccionDetalleActivity extends AppCompatActivity {
         btnMarcarRecogida.setEnabled(false);
         btnMarcarEntrega.setEnabled(false);
         btnEmbalajeSeguro.setOnClickListener(v -> mostrarChecklistEmbalaje());
+
 
         // Obtener encomienda desde BD
         String guia = getIntent().getStringExtra("guia");
@@ -127,6 +132,23 @@ public class RecoleccionDetalleActivity extends AppCompatActivity {
             Toast.makeText(this, "Encomienda no encontrada", Toast.LENGTH_SHORT).show();
             finish();
             return;
+        }
+        // Mostrar calificación solo si la encomienda está ENTREGADA
+        if (encomienda.getEstado() == Encomiendas.Estado.ENTREGADO) {
+            ratingBar.setVisibility(View.VISIBLE);
+            btnEnviarCalificacion.setVisibility(View.VISIBLE);
+
+            if (encomienda.getCalificacion() > 0) {
+                ratingBar.setRating(encomienda.getCalificacion());
+                ratingBar.setIsIndicator(true);
+                btnEnviarCalificacion.setEnabled(false);
+            } else {
+                btnEnviarCalificacion.setEnabled(true);
+                ratingBar.setIsIndicator(false);
+            }
+        } else {
+            ratingBar.setVisibility(View.GONE);
+            btnEnviarCalificacion.setVisibility(View.GONE);
         }
 
         // Mostrar información en pantalla
@@ -188,6 +210,24 @@ public class RecoleccionDetalleActivity extends AppCompatActivity {
             tvEstado.setText("Estado: " + encomienda.getEstado().name());
             Toast.makeText(this, "Encomienda marcada como entregada", Toast.LENGTH_SHORT).show();
         });
+
+        btnEnviarCalificacion.setOnClickListener(v -> {
+            int rating = (int) ratingBar.getRating();
+            if (rating == 0) {
+                Toast.makeText(this, "Seleccione una calificación", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            boolean guardado = dbHelper.guardarCalificacion(encomienda.getNumeroGuia(), rating);
+            if (guardado) {
+                encomienda.setCalificacion(rating);
+                Toast.makeText(this, "¡Gracias por tu calificación!", Toast.LENGTH_SHORT).show();
+                btnEnviarCalificacion.setEnabled(false);
+                ratingBar.setIsIndicator(true); // Bloquea modificaciones
+            } else {
+                Toast.makeText(this, "Error al guardar la calificación", Toast.LENGTH_SHORT).show();
+            }
+        });
+
     }
 
     private void enableMyLocation() {
@@ -308,6 +348,7 @@ public class RecoleccionDetalleActivity extends AppCompatActivity {
                 .setPositiveButton("Cerrar", null)
                 .show();
     }
+
 
     private void mostrarChecklistEmbalaje() {
         String[] pasos = {

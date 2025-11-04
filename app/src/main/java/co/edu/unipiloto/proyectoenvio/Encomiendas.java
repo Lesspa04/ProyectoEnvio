@@ -35,6 +35,7 @@ public class Encomiendas {
     private Date fechaEstimadaEntrega;
     private double peso;
     private double precio;
+    private int calificacion;
 
     // --- Opcionales ---
     private List<GeoPoint> ruta; // si existe
@@ -52,6 +53,7 @@ public class Encomiendas {
                        Date fechaEstimadaEntrega,
                        double peso,
                        double precio,
+                       int calificacion,
                        List<GeoPoint> ruta,
                        String recolectorId) {
         this.numeroGuia = numeroGuia;
@@ -66,6 +68,7 @@ public class Encomiendas {
         this.fechaEstimadaEntrega = fechaEstimadaEntrega;
         this.peso = peso;
         this.precio = precio;
+        this.calificacion = calificacion;
         this.ruta = ruta;
         this.recolectorId = recolectorId;
     }
@@ -93,6 +96,8 @@ public class Encomiendas {
 
         String recolectorId = null;
         int idxRecolector = cursor.getColumnIndex(DatabaseHelper.COLUMN_RECOLECTOR_ID);
+        int calificacion = cursor.getInt(cursor.getColumnIndexOrThrow("calificacion"));
+
         if (idxRecolector != -1) {
             recolectorId = cursor.getString(idxRecolector);
         }
@@ -110,6 +115,7 @@ public class Encomiendas {
                 new Date(fechaEntregaMillis),
                 peso,
                 precio,
+                calificacion,
                 null, // ruta aún no implementada
                 recolectorId
         );
@@ -133,10 +139,11 @@ public class Encomiendas {
 
     public double getPeso() { return peso; }
     public double getPrecio() { return precio; }
-
+    public int getCalificacion() { return calificacion; }
     public List<GeoPoint> getRuta() { return ruta; }
     public void setRuta(List<GeoPoint> ruta) { this.ruta = ruta; }
 
     public String getRecolectorId() { return recolectorId; }
     public void setRecolectorId(String recolectorId) { this.recolectorId = recolectorId; }
+    public void setCalificacion(int calificacion) {this.calificacion = calificacion; }
 }

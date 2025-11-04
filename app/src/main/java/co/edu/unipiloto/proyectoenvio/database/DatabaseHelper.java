@@ -13,7 +13,7 @@ import java.io.ByteArrayOutputStream;
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "rimessa.db";
-    private static final int DATABASE_VERSION = 7; // subimos versión por el cambio
+    private static final int DATABASE_VERSION = 8; // subimos versión por el cambio
 
     // ====== TABLA USUARIOS ======
     public static final String TABLE_USERS = "usuarios";
@@ -28,6 +28,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String COLUMN_GENERO = "genero";
     public static final String COLUMN_FOTO = "foto"; // BLOB
     public static final String COLUMN_CELULAR = "celular";
+
+
 
     private static final String TABLE_CREATE_USERS =
             "CREATE TABLE " + TABLE_USERS + " (" +
@@ -66,6 +68,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String COLUMN_PESO = "peso";
     public static final String COLUMN_PRECIO = "precio";
     public static final String COLUMN_RECOLECTOR_ID = "recolector_id";
+    public static final String COLUMN_CALIFICACION = "calificacion";
+
 
     private static final String TABLE_CREATE_ENCOMIENDAS =
             "CREATE TABLE " + TABLE_ENCOMIENDAS + " (" +
@@ -82,7 +86,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     COLUMN_FECHA_ENTREGA + " TEXT, " +
                     COLUMN_PESO + " REAL, " +
                     COLUMN_PRECIO + " REAL, " +
-                    COLUMN_RECOLECTOR_ID + " TEXT " +
+                    COLUMN_RECOLECTOR_ID + " TEXT, " +
+                    COLUMN_CALIFICACION + " INTEGER DEFAULT 0 " +
                     ");";
 
     public DatabaseHelper(Context context) {
@@ -244,17 +249,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return db.query(TABLE_ENCOMIENDAS, null, null, null, null, null, null);
     }
 
-    public Cursor getEncomiendasPorRemitenteCelular(String celular) {
-        SQLiteDatabase db = this.getReadableDatabase();
-        return db.query(
-                TABLE_ENCOMIENDAS,
-                null,
-                COLUMN_CELULAR_REMITENTE + "=?",
-                new String[]{celular},
-                null, null, null
-        );
-    }
-
     public Cursor obtenerEncomiendaPorGuia(String guia) {
         SQLiteDatabase db = this.getReadableDatabase();
         return db.query(
@@ -275,6 +269,16 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 COLUMN_GUIA + "=?", new String[]{guia});
         return filas > 0;
     }
+
+    public boolean guardarCalificacion(String guia, int calificacion) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_CALIFICACION, calificacion);
+
+        int filas = db.update(TABLE_ENCOMIENDAS, values, COLUMN_GUIA + "=?", new String[]{guia});
+        return filas > 0;
+    }
+
 
     public Cursor getEncomiendasPorEstado(String estado) {
         SQLiteDatabase db = this.getReadableDatabase();

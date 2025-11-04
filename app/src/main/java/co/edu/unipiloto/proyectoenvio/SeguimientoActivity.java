@@ -230,6 +230,7 @@ private String usuario = "";
 
         double peso = cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_PESO));
         double precio = cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_PRECIO));
+        int calificacion = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_CALIFICACION));
 
         return new Encomiendas(
                 guia,
@@ -244,7 +245,8 @@ private String usuario = "";
                 new Date(fechaEntregaMillis),
                 peso,
                 precio,
-                null, // ruta (puedes cargar GeoPoints si tienes)
+                calificacion,
+                null, // ruta aún no implementada
                 cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_RECOLECTOR_ID))
         );
     }
