@@ -36,6 +36,7 @@ public class Encomiendas {
     private double peso;
     private double precio;
     private int calificacion;
+    private String comentario;
 
     // --- Opcionales ---
     private List<GeoPoint> ruta; // si existe
@@ -54,6 +55,7 @@ public class Encomiendas {
                        double peso,
                        double precio,
                        int calificacion,
+                       String comentario,
                        List<GeoPoint> ruta,
                        String recolectorId) {
         this.numeroGuia = numeroGuia;
@@ -69,6 +71,7 @@ public class Encomiendas {
         this.peso = peso;
         this.precio = precio;
         this.calificacion = calificacion;
+        this.comentario = comentario;
         this.ruta = ruta;
         this.recolectorId = recolectorId;
     }
@@ -97,6 +100,7 @@ public class Encomiendas {
         String recolectorId = null;
         int idxRecolector = cursor.getColumnIndex(DatabaseHelper.COLUMN_RECOLECTOR_ID);
         int calificacion = cursor.getInt(cursor.getColumnIndexOrThrow("calificacion"));
+        String comentario = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_COMENTARIO));
 
         if (idxRecolector != -1) {
             recolectorId = cursor.getString(idxRecolector);
@@ -116,6 +120,7 @@ public class Encomiendas {
                 peso,
                 precio,
                 calificacion,
+                comentario,
                 null, // ruta aún no implementada
                 recolectorId
         );
@@ -145,5 +150,8 @@ public class Encomiendas {
 
     public String getRecolectorId() { return recolectorId; }
     public void setRecolectorId(String recolectorId) { this.recolectorId = recolectorId; }
+
     public void setCalificacion(int calificacion) {this.calificacion = calificacion; }
+    public String getComentario() { return comentario; }
+    public void setComentario(String comentario) { this.comentario = comentario; }
 }

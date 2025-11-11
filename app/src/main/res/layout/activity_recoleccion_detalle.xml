@@ -67,6 +67,12 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp" />
+            <Button
+                android:id="@+id/btnMarcarEnTransito"
+                android:text="Marcar en tránsito"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp" />
 
             <Button
                 android:id="@+id/btnMarcarEntrega"
@@ -83,6 +89,16 @@
                 android:stepSize="1"
                 android:layout_gravity="center"
                 android:layout_marginTop="12dp"
+                android:visibility="gone"/>
+
+            <EditText
+                android:id="@+id/etComentario"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Escribe un comentario sobre el servicio (máx. 200 caracteres)"
+                android:maxLength="200"
+                android:inputType="textCapSentences|textMultiLine"
+                android:layout_marginTop="8dp"
                 android:visibility="gone"/>
 
             <Button

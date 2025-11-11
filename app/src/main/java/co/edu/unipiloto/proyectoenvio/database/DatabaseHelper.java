@@ -8,12 +8,15 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
+import android.content.Intent;
+import co.edu.unipiloto.proyectoenvio.services.NotificacionService;
+
 import java.io.ByteArrayOutputStream;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "rimessa.db";
-    private static final int DATABASE_VERSION = 8; // subimos versión por el cambio
+    private static final int DATABASE_VERSION = 9; // subimos versión por el cambio
 
     // ====== TABLA USUARIOS ======
     public static final String TABLE_USERS = "usuarios";
@@ -69,6 +72,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String COLUMN_PRECIO = "precio";
     public static final String COLUMN_RECOLECTOR_ID = "recolector_id";
     public static final String COLUMN_CALIFICACION = "calificacion";
+    public static final String COLUMN_COMENTARIO = "comentario";
 
 
     private static final String TABLE_CREATE_ENCOMIENDAS =
@@ -87,7 +91,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     COLUMN_PESO + " REAL, " +
                     COLUMN_PRECIO + " REAL, " +
                     COLUMN_RECOLECTOR_ID + " TEXT, " +
-                    COLUMN_CALIFICACION + " INTEGER DEFAULT 0 " +
+                    COLUMN_CALIFICACION + " INTEGER DEFAULT 0, " +
+                    COLUMN_COMENTARIO + " TEXT " +
                     ");";
 
     public DatabaseHelper(Context context) {
@@ -260,24 +265,52 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         );
     }
 
-    public boolean actualizarEstadoEncomienda(String guia, String nuevoEstado) {
+    public boolean actualizarEstadoEncomienda(String guia, String nuevoEstado, Context context) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(COLUMN_ESTADO, nuevoEstado);
 
-        int filas = db.update(TABLE_ENCOMIENDAS, values,
-                COLUMN_GUIA + "=?", new String[]{guia});
+        int filas = db.update(TABLE_ENCOMIENDAS, values, COLUMN_GUIA + "=?", new String[]{guia});
+
+        if (filas > 0) {
+            String mensaje = "";
+            switch (nuevoEstado.toUpperCase()) {
+                case "SOLICITADO":
+                    mensaje = "Tu encomienda #" + guia + " ha sido solicitada correctamente.";
+                    break;
+
+                case "RECOGIDO":
+                    mensaje = "Tu encomienda #" + guia + " ha sido recogida por el mensajero.";
+                    break;
+
+                case "EN_TRANSITO":
+                    mensaje = "Tu encomienda #" + guia + " está en camino hacia el destino.";
+                    break;
+
+                case "ENTREGADO":
+                    mensaje = "Tu encomienda #" + guia + " ha sido entregada con éxito.";
+                    break;
+            }
+
+            if (!mensaje.isEmpty()) {
+                Intent serviceIntent = new Intent(context, NotificacionService.class);
+                serviceIntent.putExtra(NotificacionService.EXTRA_MENSAJE, mensaje);
+                context.startService(serviceIntent);
+            }
+        }
         return filas > 0;
     }
 
-    public boolean guardarCalificacion(String guia, int calificacion) {
+    public boolean guardarCalificacion(String guia, int calificacion, String comentario) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(COLUMN_CALIFICACION, calificacion);
+        values.put(COLUMN_COMENTARIO, comentario);
 
         int filas = db.update(TABLE_ENCOMIENDAS, values, COLUMN_GUIA + "=?", new String[]{guia});
         return filas > 0;
     }
+
 
 
     public Cursor getEncomiendasPorEstado(String estado) {

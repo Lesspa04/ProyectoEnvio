@@ -232,6 +232,12 @@ private String usuario = "";
         double precio = cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_PRECIO));
         int calificacion = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_CALIFICACION));
 
+        String comentario = "";
+        int idxComentario = cursor.getColumnIndex(DatabaseHelper.COLUMN_COMENTARIO);
+        if (idxComentario != -1) {
+            comentario = cursor.getString(idxComentario);
+        }
+
         return new Encomiendas(
                 guia,
                 remitenteNombre,
@@ -246,6 +252,7 @@ private String usuario = "";
                 peso,
                 precio,
                 calificacion,
+                comentario,
                 null, // ruta aún no implementada
                 cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_RECOLECTOR_ID))
         );

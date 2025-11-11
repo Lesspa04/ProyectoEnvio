@@ -15,6 +15,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.EditText;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -48,13 +49,14 @@ public class RecoleccionDetalleActivity extends AppCompatActivity {
             tvDestinatario, tvDireccionDest,
             tvEstado;
 
-    Button btnMarcarRecogida, btnMarcarEntrega, btnEmbalajeSeguro, btnEnviarCalificacion;
+    Button btnMarcarRecogida, btnMarcarEntrega, btnEmbalajeSeguro, btnEnviarCalificacion, btnMarcarEnTransito;
 
     MapView map;
     RatingBar ratingBar;
     MyLocationNewOverlay myLocationOverlay;
     Encomiendas encomienda;
     DatabaseHelper dbHelper;
+    EditText etComentario;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,8 +82,10 @@ public class RecoleccionDetalleActivity extends AppCompatActivity {
         tvEstado = findViewById(R.id.tvEstado);
         btnEmbalajeSeguro = findViewById(R.id.btnEmbalajeSeguro);
         btnMarcarRecogida = findViewById(R.id.btnMarcarRecogida);
+        btnMarcarEnTransito = findViewById(R.id.btnMarcarEnTransito);
         btnMarcarEntrega = findViewById(R.id.btnMarcarEntrega);
         ratingBar = findViewById(R.id.ratingBar);
+        etComentario = findViewById(R.id.etComentario);
         btnEnviarCalificacion = findViewById(R.id.btnEnviarCalificacion);
 
         map = findViewById(R.id.mapDetalle);
@@ -95,6 +99,7 @@ public class RecoleccionDetalleActivity extends AppCompatActivity {
 // Por defecto ocultamos los botones hasta saber el rol
         btnEmbalajeSeguro.setVisibility(Button.GONE);
         btnMarcarRecogida.setVisibility(Button.GONE);
+        btnMarcarEnTransito.setVisibility(Button.GONE);
         btnMarcarEntrega.setVisibility(Button.GONE);
 
 // Mostramos según el rol
@@ -104,6 +109,7 @@ public class RecoleccionDetalleActivity extends AppCompatActivity {
                     // El recolector puede embalar, marcar recogido y entregado
                     btnEmbalajeSeguro.setVisibility(Button.VISIBLE);
                     btnMarcarRecogida.setVisibility(Button.VISIBLE);
+                    btnMarcarEnTransito.setVisibility(Button.VISIBLE);
                     btnMarcarEntrega.setVisibility(Button.VISIBLE);
                     break;
 
@@ -113,13 +119,13 @@ public class RecoleccionDetalleActivity extends AppCompatActivity {
                     break;
 
                 case "ciudadano":
-                default:
                     // El ciudadano no puede modificar el estado ni embalar, puede calificar
                     break;
             }
         }
 
         btnMarcarRecogida.setEnabled(false);
+        btnMarcarEnTransito.setEnabled(false);
         btnMarcarEntrega.setEnabled(false);
         btnEmbalajeSeguro.setOnClickListener(v -> mostrarChecklistEmbalaje());
 
@@ -127,27 +133,33 @@ public class RecoleccionDetalleActivity extends AppCompatActivity {
         // Obtener encomienda desde BD
         String guia = getIntent().getStringExtra("guia");
         encomienda = obtenerEncomiendaDesdeBD(guia);
+        actualizarBotonesPorEstado(encomienda.getEstado());
 
         if (encomienda == null) {
             Toast.makeText(this, "Encomienda no encontrada", Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
-        // Mostrar calificación solo si la encomienda está ENTREGADA
-        if (encomienda.getEstado() == Encomiendas.Estado.ENTREGADO) {
+        // Mostrar calificación solo si el usuario es ciudadano y la encomienda fue entregada
+        if ("ciudadano".equalsIgnoreCase(rolUsuario) && encomienda.getEstado() == Encomiendas.Estado.ENTREGADO) {
             ratingBar.setVisibility(View.VISIBLE);
+            etComentario.setVisibility(View.VISIBLE);
             btnEnviarCalificacion.setVisibility(View.VISIBLE);
 
             if (encomienda.getCalificacion() > 0) {
                 ratingBar.setRating(encomienda.getCalificacion());
                 ratingBar.setIsIndicator(true);
                 btnEnviarCalificacion.setEnabled(false);
+                etComentario.setEnabled(false);
             } else {
                 btnEnviarCalificacion.setEnabled(true);
                 ratingBar.setIsIndicator(false);
+                etComentario.setEnabled(true);
             }
         } else {
+            // Ocultar completamente para recolectores y otros roles
             ratingBar.setVisibility(View.GONE);
+            etComentario.setVisibility(View.GONE);
             btnEnviarCalificacion.setVisibility(View.GONE);
         }
 
@@ -198,18 +210,53 @@ public class RecoleccionDetalleActivity extends AppCompatActivity {
 
         // Botones marcar recogida/entrega
         btnMarcarRecogida.setOnClickListener(v -> {
-            dbHelper.actualizarEstadoEncomienda(encomienda.getNumeroGuia(), Encomiendas.Estado.RECOGIDO.name());
-            encomienda.setEstado(Encomiendas.Estado.RECOGIDO);
-            tvEstado.setText("Estado: " + encomienda.getEstado().name());
-            Toast.makeText(this, "Encomienda marcada como recogida", Toast.LENGTH_SHORT).show();
+            if (encomienda.getEstado() == Encomiendas.Estado.SOLICITADO) {
+                dbHelper.actualizarEstadoEncomienda(
+                        encomienda.getNumeroGuia(),
+                        Encomiendas.Estado.RECOGIDO.name(),
+                        getApplicationContext()
+                );
+                encomienda.setEstado(Encomiendas.Estado.RECOGIDO);
+                tvEstado.setText("Estado: " + encomienda.getEstado().name());
+                Toast.makeText(this, "Encomienda marcada como recogida", Toast.LENGTH_SHORT).show();
+                actualizarBotonesPorEstado(encomienda.getEstado());
+            } else {
+                Toast.makeText(this, "No puedes retroceder de estado", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        btnMarcarEnTransito.setOnClickListener(v -> {
+            if (encomienda.getEstado() == Encomiendas.Estado.RECOGIDO) {
+                dbHelper.actualizarEstadoEncomienda(
+                        encomienda.getNumeroGuia(),
+                        Encomiendas.Estado.EN_TRANSITO.name(),
+                        getApplicationContext()
+                );
+                encomienda.setEstado(Encomiendas.Estado.EN_TRANSITO);
+                tvEstado.setText("Estado: " + encomienda.getEstado().name());
+                Toast.makeText(this, "Encomienda en tránsito", Toast.LENGTH_SHORT).show();
+                actualizarBotonesPorEstado(encomienda.getEstado());
+            } else {
+                Toast.makeText(this, "No puedes marcar en tránsito aún", Toast.LENGTH_SHORT).show();
+            }
         });
 
         btnMarcarEntrega.setOnClickListener(v -> {
-            dbHelper.actualizarEstadoEncomienda(encomienda.getNumeroGuia(), Encomiendas.Estado.ENTREGADO.name());
-            encomienda.setEstado(Encomiendas.Estado.ENTREGADO);
-            tvEstado.setText("Estado: " + encomienda.getEstado().name());
-            Toast.makeText(this, "Encomienda marcada como entregada", Toast.LENGTH_SHORT).show();
+            if (encomienda.getEstado() == Encomiendas.Estado.EN_TRANSITO) {
+                dbHelper.actualizarEstadoEncomienda(
+                        encomienda.getNumeroGuia(),
+                        Encomiendas.Estado.ENTREGADO.name(),
+                        getApplicationContext()
+                );
+                encomienda.setEstado(Encomiendas.Estado.ENTREGADO);
+                tvEstado.setText("Estado: " + encomienda.getEstado().name());
+                Toast.makeText(this, "Encomienda marcada como entregada", Toast.LENGTH_SHORT).show();
+                actualizarBotonesPorEstado(encomienda.getEstado());
+            } else {
+                Toast.makeText(this, "No puedes marcar entrega aún", Toast.LENGTH_SHORT).show();
+            }
         });
+
 
         btnEnviarCalificacion.setOnClickListener(v -> {
             int rating = (int) ratingBar.getRating();
@@ -217,12 +264,18 @@ public class RecoleccionDetalleActivity extends AppCompatActivity {
                 Toast.makeText(this, "Seleccione una calificación", Toast.LENGTH_SHORT).show();
                 return;
             }
-            boolean guardado = dbHelper.guardarCalificacion(encomienda.getNumeroGuia(), rating);
+            String comentario = etComentario.getText().toString().trim();
+            if (comentario.length() > 150) {
+                Toast.makeText(this, "El comentario no puede superar los 150 caracteres", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            boolean guardado = dbHelper.guardarCalificacion(encomienda.getNumeroGuia(), rating, comentario);
             if (guardado) {
                 encomienda.setCalificacion(rating);
                 Toast.makeText(this, "¡Gracias por tu calificación!", Toast.LENGTH_SHORT).show();
                 btnEnviarCalificacion.setEnabled(false);
-                ratingBar.setIsIndicator(true); // Bloquea modificaciones
+                ratingBar.setIsIndicator(true);
+                etComentario.setEnabled(false);
             } else {
                 Toast.makeText(this, "Error al guardar la calificación", Toast.LENGTH_SHORT).show();
             }
@@ -238,13 +291,23 @@ public class RecoleccionDetalleActivity extends AppCompatActivity {
 
     private Encomiendas obtenerEncomiendaDesdeBD(String guia) {
         Cursor cursor = dbHelper.obtenerEncomiendaPorGuia(guia);
+        Encomiendas e = null;
+
         if (cursor != null && cursor.moveToFirst()) {
-            Encomiendas e = Encomiendas.fromCursor(cursor);
+            e = Encomiendas.fromCursor(cursor);
+            int rating = cursor.getInt(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_CALIFICACION));
+            String comentario = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_COMENTARIO));
+            if (rating > 0) {
+                ratingBar.setRating(rating);
+                ratingBar.setIsIndicator(true);
+                etComentario.setText(comentario);
+                etComentario.setEnabled(false);
+            }
             cursor.close();
-            return e;
         }
-        return null;
+        return e;
     }
+
 
     // Geocodificación de dirección a GeoPoint
     private GeoPoint geocode(String direccion) {
@@ -340,7 +403,9 @@ public class RecoleccionDetalleActivity extends AppCompatActivity {
                 + "Peso: " + encomienda.getPeso() + " kg\n"
                 + "Precio: $" + encomienda.getPrecio() + "\n"
                 + "Fecha solicitud: " + sdf.format(encomienda.getFechaSolicitada()) + "\n"
-                + "Fecha estimada de entrega: " + sdf.format(encomienda.getFechaEstimadaEntrega());
+                + "Fecha estimada de entrega: " + sdf.format(encomienda.getFechaEstimadaEntrega()) + "\n"
+                + "Calificación: " + encomienda.getCalificacion() + " estrellas\n"
+                + "Comentario: " + encomienda.getComentario() + "\n";
 
         new androidx.appcompat.app.AlertDialog.Builder(this)
                 .setTitle("Características del envío")
@@ -349,6 +414,31 @@ public class RecoleccionDetalleActivity extends AppCompatActivity {
                 .show();
     }
 
+    private void actualizarBotonesPorEstado(Encomiendas.Estado estado) {
+        switch (estado) {
+            case SOLICITADO:
+                btnMarcarRecogida.setEnabled(false);
+                btnMarcarEnTransito.setEnabled(false);
+                btnMarcarEntrega.setEnabled(false);
+                break;
+            case RECOGIDO:
+                btnMarcarRecogida.setEnabled(false);
+                btnMarcarEnTransito.setEnabled(true);
+                btnMarcarEntrega.setEnabled(false);
+                break;
+            case EN_TRANSITO:
+                btnMarcarRecogida.setEnabled(false);
+                btnMarcarEnTransito.setEnabled(false);
+                btnMarcarEntrega.setEnabled(true);
+                break;
+            case ENTREGADO:
+                btnEmbalajeSeguro.setEnabled(false);
+                btnMarcarRecogida.setEnabled(false);
+                btnMarcarEnTransito.setEnabled(false);
+                btnMarcarEntrega.setEnabled(false);
+                break;
+        }
+    }
 
     private void mostrarChecklistEmbalaje() {
         String[] pasos = {
@@ -376,7 +466,7 @@ public class RecoleccionDetalleActivity extends AppCompatActivity {
                     if (todosMarcados) {
                         Toast.makeText(this, "Embalaje confirmado", Toast.LENGTH_SHORT).show();
                         btnMarcarRecogida.setEnabled(true);
-                        btnMarcarEntrega.setEnabled(true);
+                        btnEmbalajeSeguro.setEnabled(false);
                     } else {
                         Toast.makeText(this, "Debe confirmar todos los pasos de embalaje", Toast.LENGTH_LONG).show();
                     }

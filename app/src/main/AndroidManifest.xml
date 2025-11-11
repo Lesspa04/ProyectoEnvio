@@ -53,6 +53,7 @@
         <activity android:name=".EstadisticasActivity" android:exported="false"/>
         <activity android:name=".perfil.PerfilActivity" android:exported="false"/>
         <activity android:name=".menus.MenuPrincipalActivity" android:exported="false" />
+        <service android:name=".services.NotificacionService" android:exported="false" />
 
     </application>
 
