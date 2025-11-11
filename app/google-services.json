@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "112915324241",
+    "project_id": "proyectoenvio-16b28692",
+    "storage_bucket": "proyectoenvio-16b28692.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:112915324241:android:f1b3340c592211465f4770",
+        "android_client_info": {
+          "package_name": "co.edu.unipiloto.proyectoenvio"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBBfyI7AFAAma8XyfD8ha6Ccv9APx4pvHU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
