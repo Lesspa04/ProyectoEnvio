@@ -1,5 +1,6 @@
 package co.edu.unipiloto.proyectoenvio;
 
+import android.Manifest;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
@@ -9,6 +10,7 @@ import android.database.Cursor;
 import android.graphics.drawable.Drawable;
 import android.location.Address;
 import android.location.Geocoder;
+import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -19,10 +21,15 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.drawable.DrawableCompat;
+
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -47,6 +54,8 @@ import co.edu.unipiloto.proyectoenvio.services.DistanciaService;
 
 public class RutasActivity extends AppCompatActivity {
 
+    private static final int REQUEST_LOCATION_PERMISSION = 1001;
+
     private MapView mapView;
     private DatabaseHelper dbHelper;
     private GeoPoint ubicacionUsuario;
@@ -56,6 +65,9 @@ public class RutasActivity extends AppCompatActivity {
 
     private LinearLayout layoutDistancias;
     private Button btnMostrarDistancias;
+
+    private FusedLocationProviderClient fusedLocationClient;
+    private List<Encomiendas> listaRecolecciones = new ArrayList<>();
 
     // Conexión al BoundService
     private ServiceConnection connection = new ServiceConnection() {
@@ -108,6 +120,8 @@ public class RutasActivity extends AppCompatActivity {
 
         dbHelper = new DatabaseHelper(this);
 
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+
         SharedPreferences prefs = getSharedPreferences("sesion", MODE_PRIVATE);
         String usuarioActual = prefs.getString("usuario", null);
         String rolUsuario = dbHelper.obtenerRolUsuario(usuarioActual);
@@ -117,28 +131,107 @@ public class RutasActivity extends AppCompatActivity {
             return;
         }
 
-        String direccionUsuario = obtenerDireccionUsuario(usuarioActual);
-        if (direccionUsuario == null || direccionUsuario.isEmpty()) {
-            Toast.makeText(this, "Tu dirección no está registrada.", Toast.LENGTH_SHORT).show();
-            return;
+        // Pedimos/obtenemos la ubicación actual del dispositivo. Si no hay permiso o no se pudo obtener,
+        // hacemos fallback a la dirección registrada en la BD (como tú tenías antes).
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            obtenerUbicacionActualYMostrar(usuarioActual, rolUsuario);
+        } else {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_LOCATION_PERMISSION);
         }
-
-        ubicacionUsuario = geocode(direccionUsuario);
-        if (ubicacionUsuario == null) {
-            Toast.makeText(this, "No se pudo obtener tu ubicación a partir de tu dirección.", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        List<Encomiendas> lista = mostrarRecoleccionesSolicitadas(ubicacionUsuario, usuarioActual, rolUsuario);
 
         // Botón para mostrar distancias únicas
         btnMostrarDistancias.setOnClickListener(v -> {
             if (bound && distanciaService != null) {
-                mostrarDistanciasUnicas(lista);
+                mostrarDistanciasUnicas(listaRecolecciones);
             } else {
                 Toast.makeText(this, "Servicio de distancias no disponible.", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private void obtenerUbicacionActualYMostrar(String usuarioActual, String rolUsuario) {
+        try {
+            fusedLocationClient.getLastLocation()
+                    .addOnSuccessListener(location -> {
+                        if (location != null) {
+                            ubicacionUsuario = new GeoPoint(location.getLatitude(), location.getLongitude());
+                            // Llamamos al método que dibuja en el mapa y obtiene la lista
+                            listaRecolecciones = mostrarRecoleccionesSolicitadas(ubicacionUsuario, usuarioActual, rolUsuario);
+                        } else {
+                            // Si no hay lastLocation disponible, fallback a geocode de la dirección en BD
+                            String direccionUsuario = obtenerDireccionUsuario(usuarioActual);
+                            if (direccionUsuario == null || direccionUsuario.isEmpty()) {
+                                Toast.makeText(this, "No se pudo obtener la ubicación actual ni la dirección registrada.", Toast.LENGTH_SHORT).show();
+                                return;
+                            }
+                            ubicacionUsuario = geocode(direccionUsuario);
+                            if (ubicacionUsuario == null) {
+                                Toast.makeText(this, "No se pudo obtener tu ubicación a partir de tu dirección.", Toast.LENGTH_SHORT).show();
+                                return;
+                            }
+                            listaRecolecciones = mostrarRecoleccionesSolicitadas(ubicacionUsuario, usuarioActual, rolUsuario);
+                        }
+                    })
+                    .addOnFailureListener(e -> {
+                        e.printStackTrace();
+                        // fallback si ocurre un error
+                        String direccionUsuario = obtenerDireccionUsuario(usuarioActual);
+                        if (direccionUsuario == null || direccionUsuario.isEmpty()) {
+                            Toast.makeText(this, "No se pudo obtener la ubicación actual ni la dirección registrada.", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+                        ubicacionUsuario = geocode(direccionUsuario);
+                        if (ubicacionUsuario == null) {
+                            Toast.makeText(this, "No se pudo obtener tu ubicación a partir de tu dirección.", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+                        listaRecolecciones = mostrarRecoleccionesSolicitadas(ubicacionUsuario, usuarioActual, rolUsuario);
+                    });
+        } catch (SecurityException ex) {
+            ex.printStackTrace();
+            // fallback geocode
+            String direccionUsuario = obtenerDireccionUsuario(usuarioActual);
+            if (direccionUsuario == null || direccionUsuario.isEmpty()) {
+                Toast.makeText(this, "No se pudo obtener la ubicación actual ni la dirección registrada.", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            ubicacionUsuario = geocode(direccionUsuario);
+            if (ubicacionUsuario == null) {
+                Toast.makeText(this, "No se pudo obtener tu ubicación a partir de tu dirección.", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            listaRecolecciones = mostrarRecoleccionesSolicitadas(ubicacionUsuario, usuarioActual, rolUsuario);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (requestCode == REQUEST_LOCATION_PERMISSION) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                SharedPreferences prefs = getSharedPreferences("sesion", MODE_PRIVATE);
+                String usuarioActual = prefs.getString("usuario", null);
+                String rolUsuario = dbHelper.obtenerRolUsuario(usuarioActual);
+                obtenerUbicacionActualYMostrar(usuarioActual, rolUsuario);
+            } else {
+                // Usuario denegó permiso: fallback a la dirección en BD
+                SharedPreferences prefs = getSharedPreferences("sesion", MODE_PRIVATE);
+                String usuarioActual = prefs.getString("usuario", null);
+                String direccionUsuario = obtenerDireccionUsuario(usuarioActual);
+                if (direccionUsuario == null || direccionUsuario.isEmpty()) {
+                    Toast.makeText(this, "Permiso denegado y no hay dirección registrada.", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                ubicacionUsuario = geocode(direccionUsuario);
+                if (ubicacionUsuario == null) {
+                    Toast.makeText(this, "No se pudo obtener la ubicación a partir de la dirección registrada.", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                String rolUsuario = dbHelper.obtenerRolUsuario(usuarioActual);
+                listaRecolecciones = mostrarRecoleccionesSolicitadas(ubicacionUsuario, usuarioActual, rolUsuario);
+            }
+        } else {
+            super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        }
     }
 
     private String obtenerDireccionUsuario(String usuario) {
@@ -168,10 +261,11 @@ public class RutasActivity extends AppCompatActivity {
             return lista;
         }
 
+        // marcador de la ubicación actual (origen)
         Marker marcadorOrigen = new Marker(mapView);
         marcadorOrigen.setPosition(origen);
-        marcadorOrigen.setTitle("Tu ubicación de origen");
-        marcadorOrigen.setSnippet("Esta es tu dirección registrada.");
+        marcadorOrigen.setTitle("Tu ubicación actual");
+        marcadorOrigen.setSnippet("Coordenadas reales del dispositivo.");
         marcadorOrigen.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
 
         Drawable iconoAzul = ContextCompat.getDrawable(this, org.osmdroid.library.R.drawable.marker_default);

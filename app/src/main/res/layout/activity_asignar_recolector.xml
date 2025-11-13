@@ -4,7 +4,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:contentDescription="Pantalla para asignar recolectores a encomiendas"
-    android:padding="16dp"
     android:fitsSystemWindows="true">
 
     <!-- ÚNICO hijo directo del ScrollView -->
@@ -30,7 +29,7 @@
             android:orientation="vertical"
             android:divider="?android:dividerVertical"
             android:showDividers="middle"
-            android:layout_margin="12dp"/>
+            android:layout_margin="10dp"/>
 
     </LinearLayout>
 

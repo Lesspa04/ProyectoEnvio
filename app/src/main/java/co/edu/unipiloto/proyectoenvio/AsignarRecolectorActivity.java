@@ -38,7 +38,7 @@ public class AsignarRecolectorActivity extends AppCompatActivity {
 
         if (encomiendas.isEmpty()) {
             TextView tv = new TextView(this);
-            tv.setText("No hay encomiendas pendientes de asignar ✅");
+            tv.setText("No hay encomiendas pendientes de asignar");
             layoutEncomiendas.addView(tv);
             return;
         }
