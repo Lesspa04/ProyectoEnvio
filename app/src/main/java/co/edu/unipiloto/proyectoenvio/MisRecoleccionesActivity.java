@@ -73,9 +73,12 @@ public class MisRecoleccionesActivity extends AppCompatActivity {
 
         Cursor cursor;
 
-        if ("recolector de encomiendas".toLowerCase().equalsIgnoreCase(rol)) {
-            // 🔹 Recolector ve todas las encomiendas
+        if ("asignador de rutas".toLowerCase().equalsIgnoreCase(rol)) {
+            // 🔹 Aignador ve todas las encomiendas
             cursor = dbHelper.getTodasLasEncomiendas();
+        }  else if (rol.equalsIgnoreCase("recolector de encomiendas")) {
+            // Recolector ve las encomiendas aignadas
+            cursor = dbHelper.getEncomiendasAsignadasARecolector(usuario);
         } else {
             // 🔹 Ciudadano ve solo las suyas
             cursor = dbHelper.getEncomiendasPorUsuario(usuario);

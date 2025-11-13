@@ -33,6 +33,8 @@ public class SeguimientoActivity extends AppCompatActivity {
     TextView tvResultado;
     Spinner spinnerEstado;
     LinearLayout layoutFiltros;
+    private String usuarioActual = "";
+    private String rolUsuario = "";
 
     private DatabaseHelper dbHelper;
 private String usuario = "";
@@ -163,7 +165,15 @@ private String usuario = "";
 
 
     private void cargarHistorial(String usuario, String estado, Double precioMin, Double precioMax, String fechaStr) {
-        Cursor cursor = dbHelper.getEncomiendasPorUsuario(usuario);
+        rolUsuario = dbHelper.obtenerRolUsuario(usuario);
+
+        Cursor cursor;
+
+        if (rolUsuario.equalsIgnoreCase("recolector de encomiendas")) {
+            cursor = dbHelper.getEncomiendasAsignadasARecolector(usuario);
+        }  else {
+            cursor = dbHelper.getEncomiendasPorUsuario(usuario);
+        }
         List<Encomiendas> list = new ArrayList<>();
 
         if (cursor != null && cursor.moveToFirst()) {

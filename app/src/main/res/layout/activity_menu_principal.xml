@@ -112,6 +112,18 @@
                 android:paddingVertical="10dp" />
 
             <Button
+                android:id="@+id/btnAsignar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:drawableLeft="@drawable/ic_asignar"
+                android:text="Asignar Recolector"
+                android:textAllCaps="false"
+                android:textSize="16sp"
+                android:layout_marginHorizontal="48dp"
+                android:layout_marginVertical="8dp"
+                android:paddingVertical="10dp" />
+
+            <Button
                 android:id="@+id/btnRecolecciones"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

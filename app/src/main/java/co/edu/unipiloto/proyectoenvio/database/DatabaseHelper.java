@@ -12,6 +12,10 @@ import android.content.Intent;
 import co.edu.unipiloto.proyectoenvio.services.NotificacionService;
 
 import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
 
@@ -254,6 +258,31 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return db.query(TABLE_ENCOMIENDAS, null, null, null, null, null, null);
     }
 
+    // Obtener encomiendas asignadas a un recolector específico
+    public Cursor getEncomiendasAsignadasARecolector(String recolectorId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        return db.query(
+                TABLE_ENCOMIENDAS,
+                null,
+                COLUMN_RECOLECTOR_ID + "=?",
+                new String[]{recolectorId},
+                null, null, null
+        );
+    }
+
+    // Obtener encomiendas asignadas a un recolector específico y con estado SOLICITADO
+    public Cursor getEncomiendasSolicitadasDeRecolector(String recolectorId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        return db.query(
+                TABLE_ENCOMIENDAS,
+                null,
+                COLUMN_RECOLECTOR_ID + "=? AND UPPER(" + COLUMN_ESTADO + ")=UPPER(?)",
+                new String[]{recolectorId, "SOLICITADO"},
+                null, null, null
+        );
+    }
+
+
     public Cursor obtenerEncomiendaPorGuia(String guia) {
         SQLiteDatabase db = this.getReadableDatabase();
         return db.query(
@@ -330,5 +359,176 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         cursor.close();
         return count;
     }
+
+    // ====== MÉTODOS DE ESTADÍSTICAS DE CALIFICACIONES ======
+
+    // Promedio de todas las calificaciones (visión global)
+    public double obtenerPromedioCalificacionGlobal() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        double promedio = 0;
+
+        Cursor cursor = db.query(
+                TABLE_ENCOMIENDAS,
+                new String[]{"AVG(" + COLUMN_CALIFICACION + ") AS promedio"},
+                COLUMN_CALIFICACION + " > 0",
+                null, null, null, null
+        );
+
+        if (cursor.moveToFirst()) {
+            promedio = cursor.getDouble(cursor.getColumnIndexOrThrow("promedio"));
+        }
+        cursor.close();
+        return promedio;
+    }
+
+    // Promedio de calificaciones de las encomiendas de un ciudadano (remitente)
+    public double obtenerPromedioCalificacionPorUsuario(String usuario) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        double promedio = 0;
+
+        Cursor cursor = db.query(
+                TABLE_ENCOMIENDAS,
+                new String[]{"AVG(" + COLUMN_CALIFICACION + ") AS promedio"},
+                COLUMN_USUARIO_REMITENTE + "=? AND " + COLUMN_CALIFICACION + " > 0",
+                new String[]{usuario},
+                null, null, null
+        );
+
+        if (cursor.moveToFirst()) {
+            promedio = cursor.getDouble(cursor.getColumnIndexOrThrow("promedio"));
+        }
+        cursor.close();
+        return promedio;
+    }
+
+    // Promedio de calificaciones de las encomiendas asignadas a un recolector
+    public double obtenerPromedioCalificacionPorRecolector(String recolectorId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        double promedio = 0;
+
+        Cursor cursor = db.query(
+                TABLE_ENCOMIENDAS,
+                new String[]{"AVG(" + COLUMN_CALIFICACION + ") AS promedio"},
+                COLUMN_RECOLECTOR_ID + "=? AND " + COLUMN_CALIFICACION + " > 0",
+                new String[]{recolectorId},
+                null, null, null
+        );
+
+        if (cursor.moveToFirst()) {
+            promedio = cursor.getDouble(cursor.getColumnIndexOrThrow("promedio"));
+        }
+        cursor.close();
+        return promedio;
+    }
+
+    // Distribución global de calificaciones (para el asignador)
+    public Map<Integer, Integer> obtenerDistribucionCalificaciones() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Map<Integer, Integer> distribucion = new HashMap<>();
+
+        Cursor cursor = db.query(
+                TABLE_ENCOMIENDAS,
+                new String[]{COLUMN_CALIFICACION, "COUNT(*) AS cantidad"},
+                COLUMN_CALIFICACION + " > 0",
+                null,
+                COLUMN_CALIFICACION,
+                null,
+                COLUMN_CALIFICACION + " ASC"
+        );
+
+        while (cursor.moveToNext()) {
+            int calif = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_CALIFICACION));
+            int cantidad = cursor.getInt(cursor.getColumnIndexOrThrow("cantidad"));
+            distribucion.put(calif, cantidad);
+        }
+        cursor.close();
+        return distribucion;
+    }
+
+    // Distribución de calificaciones de un recolector específico
+    public Map<Integer, Integer> obtenerDistribucionCalificacionesPorRecolector(String recolectorId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Map<Integer, Integer> distribucion = new HashMap<>();
+
+        Cursor cursor = db.query(
+                TABLE_ENCOMIENDAS,
+                new String[]{COLUMN_CALIFICACION, "COUNT(*) AS cantidad"},
+                COLUMN_RECOLECTOR_ID + "=? AND " + COLUMN_CALIFICACION + " > 0",
+                new String[]{recolectorId},
+                COLUMN_CALIFICACION,
+                null,
+                COLUMN_CALIFICACION + " ASC"
+        );
+
+        while (cursor.moveToNext()) {
+            int calif = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_CALIFICACION));
+            int cantidad = cursor.getInt(cursor.getColumnIndexOrThrow("cantidad"));
+            distribucion.put(calif, cantidad);
+        }
+        cursor.close();
+        return distribucion;
+    }
+
+// ====== ASIGNACIÓN DE RECOLECTORES ======
+
+    // Obtener encomiendas sin recolector asignado
+    public List<Map<String, String>> obtenerEncomiendasSinRecolector() {
+        List<Map<String, String>> lista = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        Cursor cursor = db.query(
+                TABLE_ENCOMIENDAS,
+                new String[]{COLUMN_GUIA, COLUMN_DESTINATARIO, COLUMN_DIRECCION_DESTINATARIO, COLUMN_USUARIO_REMITENTE},
+                COLUMN_RECOLECTOR_ID + " IS NULL OR " + COLUMN_RECOLECTOR_ID + " = ''",
+                null,
+                null, null,
+                COLUMN_GUIA + " ASC"
+        );
+
+        while (cursor.moveToNext()) {
+            Map<String, String> item = new HashMap<>();
+            item.put("guia", cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_GUIA)));
+            item.put("destinatario", cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_DESTINATARIO)));
+            item.put("direccion_destinatario", cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_DIRECCION_DESTINATARIO)));
+            item.put("usuario_remitente", cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_USUARIO_REMITENTE)));
+            lista.add(item);
+        }
+        cursor.close();
+        return lista;
+    }
+
+    // Obtener lista de recolectores registrados
+    public List<String> obtenerRecolectores() {
+        List<String> recolectores = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        Cursor cursor = db.query(
+                TABLE_USERS,
+                new String[]{COLUMN_USUARIO},
+                COLUMN_ROL + "=?",
+                new String[]{"Recolector de encomiendas"},
+                null, null,
+                COLUMN_USUARIO + " ASC"
+        );
+
+        while (cursor.moveToNext()) {
+            recolectores.add(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_USUARIO)));
+        }
+        cursor.close();
+        return recolectores;
+    }
+
+    // Asignar un recolector a una encomienda
+    public boolean asignarRecolectorAEncomienda(String guia, String recolectorId) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_RECOLECTOR_ID, recolectorId);
+
+        int filas = db.update(TABLE_ENCOMIENDAS, values, COLUMN_GUIA + "=?", new String[]{guia});
+        return filas > 0;
+    }
+
+
 }
+
 

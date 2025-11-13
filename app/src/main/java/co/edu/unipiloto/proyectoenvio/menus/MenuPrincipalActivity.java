@@ -13,6 +13,7 @@ import android.widget.TextView;
 import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
 
+import co.edu.unipiloto.proyectoenvio.AsignarRecolectorActivity;
 import co.edu.unipiloto.proyectoenvio.EnvioActivity;
 import co.edu.unipiloto.proyectoenvio.EstadisticasActivity;
 import co.edu.unipiloto.proyectoenvio.MisRecoleccionesActivity;
@@ -25,7 +26,7 @@ import co.edu.unipiloto.proyectoenvio.perfil.PerfilActivity;
 
 public class MenuPrincipalActivity extends AppCompatActivity {
 
-    Button btnEnvio, btnRutas, btnRecolecciones, btnSeguimiento, btnEstadisticas;
+    Button btnEnvio, btnRutas, btnRecolecciones, btnSeguimiento, btnEstadisticas, btnAsignar;
     DatabaseHelper dbHelper;
 
     @Override
@@ -59,6 +60,7 @@ public class MenuPrincipalActivity extends AppCompatActivity {
         btnRecolecciones = findViewById(R.id.btnRecolecciones);
         btnSeguimiento = findViewById(R.id.btnSeguimiento);
         btnEstadisticas = findViewById(R.id.btnEstadisticas);
+        btnAsignar = findViewById(R.id.btnAsignar);
 
 // Inicializar vistas
         ImageView imgFotoPerfil = findViewById(R.id.imgFotoPerfil);
@@ -129,6 +131,7 @@ public class MenuPrincipalActivity extends AppCompatActivity {
         btnRecolecciones.setOnClickListener(v -> startActivity(new Intent(this, MisRecoleccionesActivity.class)));
         btnSeguimiento.setOnClickListener(v -> startActivity(new Intent(this, SeguimientoActivity.class)));
         btnEstadisticas.setOnClickListener(v -> {Intent intent = new Intent(this, EstadisticasActivity.class);startActivity(intent);});
+        btnAsignar.setOnClickListener(v -> {Intent intent = new Intent(this, AsignarRecolectorActivity.class);startActivity(intent);});
 
     }
 
@@ -138,6 +141,7 @@ public class MenuPrincipalActivity extends AppCompatActivity {
         btnRutas.setVisibility(Button.GONE);
         btnRecolecciones.setVisibility(Button.GONE);
         btnSeguimiento.setVisibility(Button.GONE);
+        btnAsignar.setVisibility(Button.GONE);
 
         // Luego activamos según el rol
         switch (rol.toLowerCase()) {
@@ -160,6 +164,9 @@ public class MenuPrincipalActivity extends AppCompatActivity {
 
             case "asignador de rutas":
                 btnRutas.setVisibility(Button.VISIBLE);
+                btnAsignar.setVisibility(Button.VISIBLE);
+                btnRecolecciones.setVisibility(Button.VISIBLE);
+                btnRecolecciones.setText("Recolecciones");
                 btnEstadisticas.setVisibility(Button.VISIBLE);
                 break;
         }

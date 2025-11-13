@@ -405,7 +405,11 @@ public class RecoleccionDetalleActivity extends AppCompatActivity {
                 + "Fecha solicitud: " + sdf.format(encomienda.getFechaSolicitada()) + "\n"
                 + "Fecha estimada de entrega: " + sdf.format(encomienda.getFechaEstimadaEntrega()) + "\n"
                 + "Calificación: " + encomienda.getCalificacion() + " estrellas\n"
-                + "Comentario: " + encomienda.getComentario() + "\n";
+                + "Comentario: " +
+                (encomienda.getComentario() != null && !encomienda.getComentario().trim().isEmpty()
+                        ? encomienda.getComentario()
+                        : "Ninguno")
+                + "\n";
 
         new androidx.appcompat.app.AlertDialog.Builder(this)
                 .setTitle("Características del envío")
