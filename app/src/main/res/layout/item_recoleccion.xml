@@ -18,37 +18,32 @@
             android:textStyle="bold"
             android:textSize="16sp"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Guía: ENV-123456"/>
+            android:layout_height="wrap_content" />
 
         <TextView
             android:id="@+id/tvRemitente"
             android:textSize="14sp"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Remitente: Juan Perez (3001234567)"/>
+            android:layout_height="wrap_content" />
 
         <TextView
             android:id="@+id/tvDestinatario"
             android:textSize="14sp"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Destinatario: Maria Gomez (3007654321)"/>
+            android:layout_height="wrap_content" />
 
         <TextView
             android:id="@+id/tvDireccion"
             android:textSize="14sp"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Dirección destino: Calle 123 #45-67"/>
+            android:layout_height="wrap_content" />
 
         <TextView
             android:id="@+id/tvEstado"
             android:textSize="14sp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Estado: SOLICITADO"
-            android:textColor="@android:color/holo_blue_dark"
+            android:textColor="?attr/colorPrimary"
             android:textStyle="bold"/>
 
     </LinearLayout>

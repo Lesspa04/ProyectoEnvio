@@ -4,14 +4,18 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true"
-    android:background="?android:attr/colorBackground">
+    android:background="?attr/colorOnPrimary">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="20dp"
+        android:padding="0dp"
         android:gravity="center_horizontal">
+
+        <!-- ========================================================= -->
+        <!--                     HEADER BONITO                         -->
+        <!-- ========================================================= -->
 
         <!-- 🟦 Header con nombre y rol -->
         <LinearLayout
@@ -19,11 +23,11 @@
             android:layout_height="wrap_content"
             android:background="@android:color/white"
             android:elevation="3dp"
-            android:padding="16dp"
+            android:padding="10dp"
             android:orientation="horizontal"
             android:gravity="center_vertical"
             android:layout_marginBottom="24dp"
-            android:backgroundTint="?attr/colorSurface">
+            android:backgroundTint="?attr/colorPrimary">
 
             <ImageView
                 android:id="@+id/imgFotoPerfil"
@@ -48,7 +52,7 @@
                     android:text="Usuario"
                     android:textStyle="bold"
                     android:textSize="18sp"
-                    android:textColor="?attr/colorOnSurface" />
+                    android:textColor="?attr/colorOnPrimary" />
 
                 <TextView
                     android:id="@+id/tvRolUsuario"
@@ -56,116 +60,263 @@
                     android:layout_height="wrap_content"
                     android:text="Rol: —"
                     android:textSize="14sp"
-                    android:textColor="?attr/colorOnSurfaceVariant" />
-            </LinearLayout>
+                    android:textColor="?attr/colorOnPrimary" />
 
+
+            </LinearLayout>
             <TextView
                 android:id="@+id/btnOpciones"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="⋮"
+                android:textColor="?attr/colorOnPrimary"
+                android:textStyle="bold"
                 android:textSize="28sp"
                 android:padding="8dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
+                android:background="?attr/colorPrimary"
                 android:gravity="center" />
         </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:gravity="center">
-        <!-- 🟨 Título -->
+        android:padding="20dp"
+        android:gravity="center_horizontal">
+
+        <!-- ========================================================= -->
+        <!--                   TITULO PRINCIPAL                        -->
+        <!-- ========================================================= -->
+
         <TextView
             android:id="@+id/appName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Rimessa"
-            android:textSize="32sp"
             android:textStyle="bold"
-            android:layout_marginBottom="24dp" />
+            android:textSize="34sp"
+            android:layout_marginBottom="24dp"
+            android:textColor="?attr/colorOnBackground" />
 
-        <!-- 🟩 BOTONES CON ÍCONOS PERSONALIZADOS -->
+
+        <!-- ========================================================= -->
+        <!--                     MENÚ PRINCIPAL BONITO                 -->
+        <!-- ========================================================= -->
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:gravity="center_horizontal">
+            android:orientation="vertical">
 
-            <Button
-                android:id="@+id/btnEnvio"
+            <!-- TARJETA DE MENÚ -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardEnvio"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:drawableLeft="@drawable/ic_package"
-                android:text="Registrar Envío"
-                android:textAllCaps="false"
-                android:textSize="16sp"
-                android:layout_marginHorizontal="48dp"
-                android:layout_marginVertical="8dp"
-                android:paddingVertical="10dp" />
+                android:layout_height="70dp"
+                app:cardElevation="4dp"
+                app:cardCornerRadius="20dp"
+                android:layout_marginVertical="10dp"
+                android:foreground="?attr/selectableItemBackground"
+                app:cardBackgroundColor="?attr/colorPrimary">
 
-            <Button
-                android:id="@+id/btnRutas"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:drawableLeft="@drawable/ic_ruta"
-                android:text="Asignar Rutas"
-                android:textAllCaps="false"
-                android:textSize="16sp"
-                android:layout_marginHorizontal="48dp"
-                android:layout_marginVertical="8dp"
-                android:paddingVertical="10dp" />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="20dp"
+                    android:gravity="center_vertical">
 
-            <Button
-                android:id="@+id/btnAsignar"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:drawableLeft="@drawable/ic_asignar"
-                android:text="Asignar Recolector"
-                android:textAllCaps="false"
-                android:textSize="16sp"
-                android:layout_marginHorizontal="48dp"
-                android:layout_marginVertical="8dp"
-                android:paddingVertical="10dp" />
+                    <ImageView
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:src="@drawable/ic_package" />
 
-            <Button
-                android:id="@+id/btnRecolecciones"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:drawableLeft="@drawable/ic_recoleccion"
-                android:text="Mis Recolecciones"
-                android:textAllCaps="false"
-                android:textSize="16sp"
-                android:layout_marginHorizontal="48dp"
-                android:layout_marginVertical="8dp"
-                android:paddingVertical="10dp"  />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Registrar Envío"
+                        android:textSize="18sp"
+                        android:layout_marginStart="20dp"
+                        android:textColor="?attr/colorOnPrimary" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
 
-            <Button
-                android:id="@+id/btnSeguimiento"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:drawableLeft="@drawable/ic_seguimiento"
-                android:text="Seguimiento"
-                android:textAllCaps="false"
-                android:textSize="16sp"
-                android:layout_marginHorizontal="48dp"
-                android:layout_marginVertical="8dp"
-                android:paddingVertical="10dp" />
 
-            <Button
-                android:id="@+id/btnEstadisticas"
+            <!-- TARJETA: Asignar Rutas -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardRutas"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:drawableLeft="@drawable/ic_estadisticas"
-                android:text="Estadísticas"
-                android:textAllCaps="false"
-                android:textSize="16sp"
-                android:layout_marginHorizontal="48dp"
-                android:layout_marginVertical="8dp"
-                android:paddingVertical="10dp" />
+                android:layout_height="70dp"
+                app:cardElevation="4dp"
+                app:cardCornerRadius="20dp"
+                android:layout_marginVertical="10dp"
+                android:foreground="?attr/selectableItemBackground"
+                app:cardBackgroundColor="?attr/colorPrimary">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="20dp"
+                    android:gravity="center_vertical">
+
+                    <ImageView
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:src="@drawable/ic_ruta" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Rutas: Recolección / Entrega"
+                        android:textSize="18sp"
+                        android:layout_marginStart="20dp"
+                        android:textColor="?attr/colorOnPrimary" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+
+
+            <!-- TARJETA: Asignar Encomiendas -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardAsignar"
+                android:layout_width="match_parent"
+                android:layout_height="70dp"
+                app:cardElevation="4dp"
+                app:cardCornerRadius="20dp"
+                android:layout_marginVertical="10dp"
+                android:foreground="?attr/selectableItemBackground"
+                app:cardBackgroundColor="?attr/colorPrimary">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="20dp"
+                    android:gravity="center_vertical">
+
+                    <ImageView
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:src="@drawable/ic_asignar" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Asignar Recolector"
+                        android:textSize="18sp"
+                        android:layout_marginStart="20dp"
+                        android:textColor="?attr/colorOnPrimary" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+
+
+            <!-- TARJETA: Recolecciones -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardRecolecciones"
+                android:layout_width="match_parent"
+                android:layout_height="70dp"
+                app:cardElevation="4dp"
+                app:cardCornerRadius="20dp"
+                android:layout_marginVertical="10dp"
+                android:foreground="?attr/selectableItemBackground"
+                app:cardBackgroundColor="?attr/colorPrimary">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="20dp"
+                    android:gravity="center_vertical">
+
+                    <ImageView
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:src="@drawable/ic_recoleccion" />
+
+                    <TextView
+                        android:id="@+id/tvRecolecciones"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Recolecciones"
+                        android:textSize="18sp"
+                        android:layout_marginStart="20dp"
+                        android:textColor="?attr/colorOnPrimary" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+
+
+            <!-- TARJETA: Seguimiento -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardSeguimiento"
+                android:layout_width="match_parent"
+                android:layout_height="70dp"
+                app:cardElevation="4dp"
+                app:cardCornerRadius="20dp"
+                android:layout_marginVertical="10dp"
+                android:foreground="?attr/selectableItemBackground"
+                app:cardBackgroundColor="?attr/colorPrimary">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="20dp"
+                    android:gravity="center_vertical">
+
+                    <ImageView
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:src="@drawable/ic_seguimiento" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Seguimiento"
+                        android:textSize="18sp"
+                        android:layout_marginStart="20dp"
+                        android:textColor="?attr/colorOnPrimary" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+
+
+            <!-- TARJETA: Estadísticas -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardEstadisticas"
+                android:layout_width="match_parent"
+                android:layout_height="70dp"
+                app:cardElevation="4dp"
+                app:cardCornerRadius="20dp"
+                android:layout_marginVertical="10dp"
+                android:foreground="?attr/selectableItemBackground"
+                app:cardBackgroundColor="?attr/colorPrimary">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="20dp"
+                    android:gravity="center_vertical">
+
+                    <ImageView
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:src="@drawable/ic_estadisticas" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Estadísticas"
+                        android:textSize="18sp"
+                        android:layout_marginStart="20dp"
+                        android:textColor="?attr/colorOnPrimary" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
 
         </LinearLayout>
-    </LinearLayout>
-
+        </LinearLayout>
     </LinearLayout>
 </ScrollView>

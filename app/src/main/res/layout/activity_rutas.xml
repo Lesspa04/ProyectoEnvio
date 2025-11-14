@@ -54,16 +54,32 @@
 
     </FrameLayout>
 
-    <!-- Botón moderno y redondeado -->
-    <Button
-        android:id="@+id/btnMostrarDistancias"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Mostrar Distancias"
-        android:layout_margin="10dp"
-        android:textColor="@android:color/white"
-        android:padding="12dp"
-        android:fontFamily="sans-serif-medium"
-        android:layout_gravity="center"
-        android:clipToOutline="true" />
+        android:orientation="vertical"
+        android:padding="10dp"
+        android:background="?attr/colorOnPrimary">
+
+        <Button
+            android:id="@+id/btnMostrarDistancias"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Mostrar Distancias"
+            android:textColor="@android:color/white"
+            android:padding="8dp"
+            android:fontFamily="sans-serif-medium"
+            android:layout_marginBottom="4dp"
+            android:clipToOutline="true" />
+
+        <Button
+            android:id="@+id/btnCambiarVista"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Ver Entregas"
+            android:textColor="@android:color/white"
+            android:padding="8dp" />
+
+    </LinearLayout>
+
 </LinearLayout>

@@ -13,6 +13,8 @@ import android.widget.TextView;
 import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.android.material.card.MaterialCardView;
+
 import co.edu.unipiloto.proyectoenvio.AsignarRecolectorActivity;
 import co.edu.unipiloto.proyectoenvio.EnvioActivity;
 import co.edu.unipiloto.proyectoenvio.EstadisticasActivity;
@@ -26,7 +28,8 @@ import co.edu.unipiloto.proyectoenvio.perfil.PerfilActivity;
 
 public class MenuPrincipalActivity extends AppCompatActivity {
 
-    Button btnEnvio, btnRutas, btnRecolecciones, btnSeguimiento, btnEstadisticas, btnAsignar;
+    MaterialCardView btnEnvio, btnRutas, btnRecolecciones, btnSeguimiento, btnEstadisticas, btnAsignar;
+    TextView tvRecolecciones;
     DatabaseHelper dbHelper;
 
     @Override
@@ -55,12 +58,12 @@ public class MenuPrincipalActivity extends AppCompatActivity {
         }
 
         // Inicializar botones
-        btnEnvio = findViewById(R.id.btnEnvio);
-        btnRutas = findViewById(R.id.btnRutas);
-        btnRecolecciones = findViewById(R.id.btnRecolecciones);
-        btnSeguimiento = findViewById(R.id.btnSeguimiento);
-        btnEstadisticas = findViewById(R.id.btnEstadisticas);
-        btnAsignar = findViewById(R.id.btnAsignar);
+        btnEnvio = findViewById(R.id.cardEnvio);
+        btnRutas = findViewById(R.id.cardRutas);
+        btnRecolecciones = findViewById(R.id.cardRecolecciones);
+        btnSeguimiento = findViewById(R.id.cardSeguimiento);
+        btnEstadisticas = findViewById(R.id.cardEstadisticas);
+        btnAsignar = findViewById(R.id.cardAsignar);
 
 // Inicializar vistas
         ImageView imgFotoPerfil = findViewById(R.id.imgFotoPerfil);
@@ -135,6 +138,52 @@ public class MenuPrincipalActivity extends AppCompatActivity {
 
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        // Recuperar usuario actual
+        SharedPreferences prefs = getSharedPreferences("sesion", MODE_PRIVATE);
+        String usuario = prefs.getString("usuario", null);
+
+        if (usuario == null) return;
+
+        // Volver a obtener referencias (por si acaso)
+        ImageView imgFotoPerfil = findViewById(R.id.imgFotoPerfil);
+        TextView tvNombreUsuario = findViewById(R.id.tvNombreUsuario);
+        TextView tvRolUsuario = findViewById(R.id.tvRolUsuario);
+
+        // Consultar datos en BD
+        Cursor cursor = dbHelper.obtenerUsuario(usuario);
+        if (cursor != null && cursor.moveToFirst()) {
+
+            String nombre = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_NOMBRE));
+            String rol = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.COLUMN_ROL));
+
+            tvNombreUsuario.setText(nombre);
+            tvRolUsuario.setText("Rol: " + rol);
+
+            // Cargar foto
+            int fotoIndex = cursor.getColumnIndex(DatabaseHelper.COLUMN_FOTO);
+            Bitmap foto = null;
+            if (fotoIndex != -1) {
+                byte[] fotoBytes = cursor.getBlob(fotoIndex);
+                if (fotoBytes != null && fotoBytes.length > 0) {
+                    foto = BitmapFactory.decodeByteArray(fotoBytes, 0, fotoBytes.length);
+                }
+            }
+
+            if (foto != null) {
+                imgFotoPerfil.setImageBitmap(foto);
+            } else {
+                imgFotoPerfil.setImageResource(R.mipmap.ic_launcher_round);
+            }
+
+            cursor.close();
+        }
+    }
+
+
     private void configurarBotonesPorRol(String rol) {
         // Primero ocultamos todos los botones de funciones
         btnEnvio.setVisibility(Button.GONE);
@@ -149,7 +198,8 @@ public class MenuPrincipalActivity extends AppCompatActivity {
                 btnEnvio.setVisibility(Button.VISIBLE);
                 btnRecolecciones.setVisibility(Button.VISIBLE);
                 btnSeguimiento.setVisibility(Button.VISIBLE);
-                btnRecolecciones.setText("Mis solicitudes");
+                tvRecolecciones = btnRecolecciones.findViewById(R.id.tvRecolecciones);
+                tvRecolecciones.setText("Mis solicitudes");
                 btnEstadisticas.setVisibility(Button.VISIBLE);
                 break;
 
@@ -157,7 +207,8 @@ public class MenuPrincipalActivity extends AppCompatActivity {
                 btnRutas.setVisibility(Button.VISIBLE);
                 btnRecolecciones.setVisibility(Button.VISIBLE);
                 btnSeguimiento.setVisibility(Button.VISIBLE);
-                btnRecolecciones.setText("Mis recolecciones");
+                tvRecolecciones = btnRecolecciones.findViewById(R.id.tvRecolecciones);
+                tvRecolecciones.setText("Mis recolecciones");
                 btnEstadisticas.setVisibility(Button.VISIBLE);
 
                 break;
@@ -166,7 +217,8 @@ public class MenuPrincipalActivity extends AppCompatActivity {
                 btnRutas.setVisibility(Button.VISIBLE);
                 btnAsignar.setVisibility(Button.VISIBLE);
                 btnRecolecciones.setVisibility(Button.VISIBLE);
-                btnRecolecciones.setText("Recolecciones");
+                tvRecolecciones = btnRecolecciones.findViewById(R.id.tvRecolecciones);
+                tvRecolecciones.setText("Recolecciones");
                 btnEstadisticas.setVisibility(Button.VISIBLE);
                 break;
         }

@@ -10,14 +10,12 @@ import android.database.Cursor;
 import android.graphics.drawable.Drawable;
 import android.location.Address;
 import android.location.Geocoder;
-import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
-import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -66,13 +64,15 @@ public class RutasActivity extends AppCompatActivity {
     private boolean pendienteMostrar = false;
 
     private LinearLayout layoutDistancias;
-    private Button btnMostrarDistancias;
+    private Button btnMostrarDistancias, btnCambiarVista;
 
     private FusedLocationProviderClient fusedLocationClient;
-    private List<Encomiendas> listaRecolecciones = new ArrayList<>();
+    private List<Encomiendas> listaEncomiendas = new ArrayList<>();
 
     private String usuarioActual;
     private String rolUsuario;
+
+    private boolean mostrandoRecolecciones = true; // true = recolecciones, false = entregas
 
     private ServiceConnection connection = new ServiceConnection() {
         @Override
@@ -81,9 +81,8 @@ public class RutasActivity extends AppCompatActivity {
             distanciaService = binder.getService();
             bound = true;
 
-            // Si ya tenemos ubicación y aún no mostramos rutas, lo hacemos ahora
             if (ubicacionUsuario != null && !pendienteMostrar) {
-                listaRecolecciones = mostrarRecoleccionesSolicitadas(ubicacionUsuario, usuarioActual, rolUsuario);
+                actualizarVista();
                 pendienteMostrar = true;
             }
         }
@@ -128,9 +127,9 @@ public class RutasActivity extends AppCompatActivity {
 
         layoutDistancias = findViewById(R.id.layoutDistancias);
         btnMostrarDistancias = findViewById(R.id.btnMostrarDistancias);
+        btnCambiarVista = findViewById(R.id.btnCambiarVista);
 
         dbHelper = new DatabaseHelper(this);
-
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
         SharedPreferences prefs = getSharedPreferences("sesion", MODE_PRIVATE);
@@ -152,12 +151,19 @@ public class RutasActivity extends AppCompatActivity {
             CardView cardDistancias = findViewById(R.id.cardDistancias);
             if (cardDistancias.getVisibility() == View.GONE) {
                 cardDistancias.setVisibility(View.VISIBLE);
-                mostrarDistanciasUnicas(listaRecolecciones); // llenar distancias
+                mostrarDistanciasUnicas();
             } else {
                 cardDistancias.setVisibility(View.GONE);
             }
         });
 
+        btnCambiarVista.setOnClickListener(v -> {
+            mostrandoRecolecciones = !mostrandoRecolecciones;
+            btnCambiarVista.setText(mostrandoRecolecciones ? "Ver Entregas" : "Ver Recolecciones");
+            mapView.getOverlays().clear();
+            layoutDistancias.removeAllViews();
+            actualizarVista();
+        });
     }
 
     private void obtenerUbicacionActualYMostrar() {
@@ -173,17 +179,21 @@ public class RutasActivity extends AppCompatActivity {
                             }
                         }
 
-                        // Mostrar rutas solo si ya tenemos ubicación
-                        if (ubicacionUsuario != null && bound && distanciaService != null) {
-                            listaRecolecciones = mostrarRecoleccionesSolicitadas(ubicacionUsuario, usuarioActual, rolUsuario);
-                            pendienteMostrar = true;
-                        } else {
-                            pendienteMostrar = false; // Esperar a que se conecte el servicio
-                        }
+                        actualizarVista();
                     })
-                    .addOnFailureListener(e -> e.printStackTrace());
+                    .addOnFailureListener(Throwable::printStackTrace);
         } catch (SecurityException ex) {
             ex.printStackTrace();
+        }
+    }
+
+    private void actualizarVista() {
+        if (ubicacionUsuario != null && distanciaService != null && bound) {
+            if (mostrandoRecolecciones) {
+                listaEncomiendas = mostrarRecoleccionesSolicitadas(ubicacionUsuario, usuarioActual, rolUsuario);
+            } else {
+                listaEncomiendas = mostrarEntregas(ubicacionUsuario, usuarioActual, rolUsuario);
+            }
         }
     }
 
@@ -196,12 +206,7 @@ public class RutasActivity extends AppCompatActivity {
                 String direccionUsuario = obtenerDireccionUsuario(usuarioActual);
                 if (direccionUsuario != null && !direccionUsuario.isEmpty()) {
                     ubicacionUsuario = geocode(direccionUsuario);
-                    if (ubicacionUsuario != null && bound && distanciaService != null) {
-                        listaRecolecciones = mostrarRecoleccionesSolicitadas(ubicacionUsuario, usuarioActual, rolUsuario);
-                        pendienteMostrar = true;
-                    } else {
-                        pendienteMostrar = false;
-                    }
+                    actualizarVista();
                 }
             }
         } else {
@@ -219,11 +224,12 @@ public class RutasActivity extends AppCompatActivity {
         return null;
     }
 
+    // ------------------- RECOLECCIONES -------------------
     private List<Encomiendas> mostrarRecoleccionesSolicitadas(GeoPoint origen, String usuarioActual, String rolUsuario) {
         List<Encomiendas> lista;
 
         if ("asignador de rutas".equalsIgnoreCase(rolUsuario)) {
-            lista = obtenerRecoleccionesSolicitadas();
+            lista = obtenerEncomiendasPorEstado("SOLICITADO");
         } else if ("recolector de encomiendas".equalsIgnoreCase(rolUsuario)) {
             lista = obtenerEncomiendasAsignadasARecolector(usuarioActual);
         } else {
@@ -231,51 +237,61 @@ public class RutasActivity extends AppCompatActivity {
             return new ArrayList<>();
         }
 
+        return mostrarEnMapa(origen, lista, true);
+    }
+
+    // ------------------- ENTREGAS -------------------
+    private List<Encomiendas> mostrarEntregas(GeoPoint origen, String usuarioActual, String rolUsuario) {
+        List<Encomiendas> lista;
+
+        if ("asignador de rutas".equalsIgnoreCase(rolUsuario)) {
+            lista = obtenerEncomiendasPorEstado("RECOGIDO", "EN_TRANSITO");
+        } else if ("recolector de encomiendas".equalsIgnoreCase(rolUsuario)) {
+            lista = obtenerEncomiendasRecogerARecolector(usuarioActual);
+
+        } else {
+            Toast.makeText(this, "Rol no autorizado para ver rutas.", Toast.LENGTH_SHORT).show();
+            return new ArrayList<>();
+        }
+
+        return mostrarEnMapa(origen, lista, false);
+    }
+
+    private List<Encomiendas> mostrarEnMapa(GeoPoint origen, List<Encomiendas> lista, boolean esRecoleccion) {
         if (lista.isEmpty()) {
-            Toast.makeText(this, "No hay recolecciones solicitadas.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, esRecoleccion ? "No hay recolecciones solicitadas." : "No hay entregas pendientes.", Toast.LENGTH_SHORT).show();
             return lista;
         }
 
-        // Limpiar markers antiguos pero conservar polylines
-        List<Polyline> rutas = new ArrayList<>();
-        for (int i = 0; i < mapView.getOverlays().size(); i++) {
-            if (mapView.getOverlays().get(i) instanceof Polyline) {
-                rutas.add((Polyline) mapView.getOverlays().get(i));
-            }
-        }
         mapView.getOverlays().clear();
-        mapView.getOverlays().addAll(rutas);
 
-        // Marcador de la ubicación actual
+        // Marcador del origen
         Marker marcadorOrigen = new Marker(mapView);
         marcadorOrigen.setPosition(origen);
         marcadorOrigen.setTitle("Tu ubicación actual");
-        marcadorOrigen.setSnippet("Coordenadas reales del dispositivo.");
-        marcadorOrigen.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
-
         Drawable iconoAzul = ContextCompat.getDrawable(this, org.osmdroid.library.R.drawable.marker_default);
         if (iconoAzul != null) {
             iconoAzul = DrawableCompat.wrap(iconoAzul);
             DrawableCompat.setTint(iconoAzul, ContextCompat.getColor(this, android.R.color.holo_blue_dark));
             marcadorOrigen.setIcon(iconoAzul);
         }
-        marcadorOrigen.setAlpha(0.95f);
         mapView.getOverlays().add(marcadorOrigen);
 
-        // Convertimos direcciones a GeoPoints y añadimos markers verdes
-        List<GeoPoint> puntosRecoleccion = new ArrayList<>();
+        List<GeoPoint> puntos = new ArrayList<>();
         for (Encomiendas e : lista) {
-            GeoPoint punto = geocode(e.getRemitenteDireccion());
+            String direccion = esRecoleccion ? e.getRemitenteDireccion() : e.getDestinatarioDireccion();
+            GeoPoint punto = geocode(direccion);
             if (punto != null) {
                 Marker marker = new Marker(mapView);
                 marker.setPosition(punto);
                 marker.setTitle("Guía: " + e.getNumeroGuia());
 
-                Drawable iconoVerde = ContextCompat.getDrawable(this, org.osmdroid.library.R.drawable.marker_default);
-                if (iconoVerde != null) {
-                    iconoVerde = DrawableCompat.wrap(iconoVerde);
-                    DrawableCompat.setTint(iconoVerde, ContextCompat.getColor(this, android.R.color.holo_green_dark));
-                    marker.setIcon(iconoVerde);
+                Drawable icono = ContextCompat.getDrawable(this, org.osmdroid.library.R.drawable.marker_default);
+                if (icono != null) {
+                    icono = DrawableCompat.wrap(icono);
+                    int color = esRecoleccion ? android.R.color.holo_green_dark : android.R.color.holo_red_dark;
+                    DrawableCompat.setTint(icono, ContextCompat.getColor(this, color));
+                    marker.setIcon(icono);
                 }
 
                 marker.setOnMarkerClickListener((m, mv) -> {
@@ -286,24 +302,15 @@ public class RutasActivity extends AppCompatActivity {
                 });
 
                 mapView.getOverlays().add(marker);
-                puntosRecoleccion.add(punto);
+                puntos.add(punto);
             }
         }
 
-        // Ordenamos por cercanía al origen
-        List<GeoPoint> puntosOrdenados = (distanciaService != null) ?
-                ordenarPorCercania(origen, puntosRecoleccion) :
-                new ArrayList<>(puntosRecoleccion);
-
-        // Construimos lista final incluyendo el origen
         List<GeoPoint> puntosFinales = new ArrayList<>();
         puntosFinales.add(origen);
-        puntosFinales.addAll(puntosOrdenados);
+        puntosFinales.addAll(ordenarPorCercania(origen, puntos));
 
-        // Ejecutamos la tarea para obtener la ruta
-        if (puntosFinales.size() > 1) {
-            new ObtenerRutaTask().execute(puntosFinales.toArray(new GeoPoint[0]));
-        }
+        if (puntosFinales.size() > 1) new ObtenerRutaTask().execute(puntosFinales.toArray(new GeoPoint[0]));
 
         mapView.getController().setZoom(12.0);
         mapView.getController().setCenter(origen);
@@ -311,36 +318,16 @@ public class RutasActivity extends AppCompatActivity {
         return lista;
     }
 
-    private void mostrarDistanciasUnicas(List<Encomiendas> lista) {
-        layoutDistancias.removeAllViews();
-        HashSet<String> direccionesVistas = new HashSet<>();
-
-        for (Encomiendas e : lista) {
-            String direccion = e.getRemitenteDireccion();
-            if (direccion == null || direccion.isEmpty() || direccionesVistas.contains(direccion)) continue;
-
-            GeoPoint punto = geocode(direccion);
-            if (punto != null) {
-                direccionesVistas.add(direccion);
-                float distancia = distanciaService.calcularDistancia(ubicacionUsuario, punto);
-                String texto = direccion + " → " + String.format("%.2f km", distancia / 1000f);
-
-                TextView tv = new TextView(this);
-                tv.setText(texto);
-                tv.setPadding(8, 8, 8, 8);
-                layoutDistancias.addView(tv);
-            }
-        }
-    }
-
-    private List<Encomiendas> obtenerRecoleccionesSolicitadas() {
+    private List<Encomiendas> obtenerEncomiendasPorEstado(String... estados) {
         List<Encomiendas> lista = new ArrayList<>();
-        Cursor cursor = dbHelper.getEncomiendasPorEstado("SOLICITADO");
-        if (cursor != null && cursor.moveToFirst()) {
-            do {
-                lista.add(Encomiendas.fromCursor(cursor));
-            } while (cursor.moveToNext());
-            cursor.close();
+        for (String estado : estados) {
+            Cursor cursor = dbHelper.getEncomiendasPorEstado(estado);
+            if (cursor != null && cursor.moveToFirst()) {
+                do {
+                    lista.add(Encomiendas.fromCursor(cursor));
+                } while (cursor.moveToNext());
+                cursor.close();
+            }
         }
         return lista;
     }
@@ -355,6 +342,41 @@ public class RutasActivity extends AppCompatActivity {
             cursor.close();
         }
         return lista;
+    }
+
+    private List<Encomiendas> obtenerEncomiendasRecogerARecolector(String recolectorId) {
+        List<Encomiendas> lista = new ArrayList<>();
+        Cursor cursor = dbHelper.getEncomiendasEntregarDeRecolector(recolectorId);
+        if (cursor != null && cursor.moveToFirst()) {
+            do {
+                lista.add(Encomiendas.fromCursor(cursor));
+            } while (cursor.moveToNext());
+            cursor.close();
+        }
+        return lista;
+    }
+
+    private void mostrarDistanciasUnicas() {
+        layoutDistancias.removeAllViews();
+        if (ubicacionUsuario == null || distanciaService == null) return;
+
+        HashSet<String> direccionesVistas = new HashSet<>();
+        for (Encomiendas e : listaEncomiendas) {
+            String direccion = mostrandoRecolecciones ? e.getRemitenteDireccion() : e.getDestinatarioDireccion();
+            if (direccion == null || direccion.isEmpty() || direccionesVistas.contains(direccion)) continue;
+
+            GeoPoint punto = geocode(direccion);
+            if (punto != null) {
+                direccionesVistas.add(direccion);
+                float distancia = distanciaService.calcularDistancia(ubicacionUsuario, punto);
+                String texto = direccion + " → " + String.format("%.2f km", distancia / 1000f);
+
+                TextView tv = new TextView(this);
+                tv.setText(texto);
+                tv.setPadding(8, 8, 8, 8);
+                layoutDistancias.addView(tv);
+            }
+        }
     }
 
     private GeoPoint geocode(String direccion) {
@@ -374,8 +396,8 @@ public class RutasActivity extends AppCompatActivity {
     private List<GeoPoint> ordenarPorCercania(GeoPoint origen, List<GeoPoint> puntos) {
         List<GeoPoint> puntosOrdenados = new ArrayList<>();
         List<GeoPoint> puntosRestantes = new ArrayList<>(puntos);
-
         GeoPoint actual = origen;
+
         while (!puntosRestantes.isEmpty()) {
             GeoPoint masCercano = null;
             double minDistancia = Double.MAX_VALUE;

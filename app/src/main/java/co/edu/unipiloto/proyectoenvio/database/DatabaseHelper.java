@@ -282,6 +282,26 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         );
     }
 
+    // Obtener encomiendas asignadas a un recolector específico y con estado RECOGIDO o EN_TRANSITO
+    public Cursor getEncomiendasEntregarDeRecolector(String recolectorId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        // Selección: recolectorId = ? AND (estado = ? OR estado = ?)
+        String selection = COLUMN_RECOLECTOR_ID + "=? AND (" + COLUMN_ESTADO + "=? OR " + COLUMN_ESTADO + "=?)";
+        String[] selectionArgs = new String[]{recolectorId, "RECOGIDO", "EN_TRANSITO"};
+
+        return db.query(
+                TABLE_ENCOMIENDAS,
+                null, // todas las columnas
+                selection,
+                selectionArgs,
+                null, // groupBy
+                null, // having
+                null  // orderBy
+        );
+    }
+
+
 
     public Cursor obtenerEncomiendaPorGuia(String guia) {
         SQLiteDatabase db = this.getReadableDatabase();

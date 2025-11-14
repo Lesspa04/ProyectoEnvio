@@ -45,9 +45,9 @@ public class AsignarRecolectorActivity extends AppCompatActivity {
 
         for (Map<String, String> e : encomiendas) {
             View card = getLayoutInflater().inflate(R.layout.item_encomienda_asignar, null);
-            TextView txtGuia = card.findViewById(R.id.txtGuia);
-            TextView txtDestino = card.findViewById(R.id.txtDestino);
-            TextView txtRemitente = card.findViewById(R.id.txtRemitente);
+            TextView txtGuia = card.findViewById(R.id.tvGuia);
+            TextView txtDestino = card.findViewById(R.id.tvDireccion);
+            TextView txtRemitente = card.findViewById(R.id.tvRemitente);
             Spinner spinnerRecolector = card.findViewById(R.id.spinnerRecolector);
             Button btnAsignar = card.findViewById(R.id.btnAsignar);
 
