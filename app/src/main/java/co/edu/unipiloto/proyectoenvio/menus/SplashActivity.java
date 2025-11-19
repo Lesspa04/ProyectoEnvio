@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import co.edu.unipiloto.proyectoenvio.loginSignup.LoginActivity;
 import co.edu.unipiloto.proyectoenvio.R;
+import co.edu.unipiloto.proyectoenvio.sync.SyncManager;
 
 public class SplashActivity extends AppCompatActivity {
 
@@ -18,6 +19,8 @@ public class SplashActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
 
+        // 🔥 SINCRONIZA APENAS ABRE LA APP
+        new SyncManager(this).fullSync();
 
         btnContinuar = findViewById(R.id.btnContinuar);
 

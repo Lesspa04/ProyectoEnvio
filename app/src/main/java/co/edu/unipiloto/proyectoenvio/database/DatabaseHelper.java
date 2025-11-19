@@ -9,7 +9,23 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
 import android.content.Intent;
+import android.util.Log;
+
+import co.edu.unipiloto.proyectoenvio.model.CalificacionRequest;
 import co.edu.unipiloto.proyectoenvio.services.NotificacionService;
+
+import co.edu.unipiloto.proyectoenvio.model.Usuario;
+import co.edu.unipiloto.proyectoenvio.model.Encomienda;
+import co.edu.unipiloto.proyectoenvio.network.RetrofitClient;
+import co.edu.unipiloto.proyectoenvio.network.UsuarioService;
+import co.edu.unipiloto.proyectoenvio.network.EncomiendaService;
+
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
@@ -98,9 +114,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     COLUMN_CALIFICACION + " INTEGER DEFAULT 0, " +
                     COLUMN_COMENTARIO + " TEXT " +
                     ");";
+    private UsuarioService usuarioService;
+    private EncomiendaService encomiendaService;
+
 
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
+        usuarioService = RetrofitClient.getClient().create(UsuarioService.class);
+        encomiendaService = RetrofitClient.getClient().create(EncomiendaService.class);
     }
 
     @Override
@@ -119,7 +140,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     // ====== MÉTODOS USUARIOS ======
     public boolean insertarUsuario(String nombre, String usuario, String email, String password,
                                    String direccion, String celular, String rol, String fechaNacimiento, String genero) {
+
         SQLiteDatabase db = this.getWritableDatabase();
+
         ContentValues values = new ContentValues();
         values.put(COLUMN_NOMBRE, nombre);
         values.put(COLUMN_USUARIO, usuario);
@@ -132,8 +155,23 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put(COLUMN_GENERO, genero);
 
         long resultado = db.insert(TABLE_USERS, null, values);
+
+        if (resultado != -1) {
+
+            // 🔥 ENVIAR AL BACKEND
+            Usuario u = new Usuario(nombre, usuario, email, password, direccion, celular, rol, fechaNacimiento, genero, null);
+
+            usuarioService.crear(u).enqueue(new Callback<Usuario>() {
+                @Override
+                public void onResponse(Call<Usuario> call, Response<Usuario> response) { }
+                @Override
+                public void onFailure(Call<Usuario> call, Throwable t) { }
+            });
+        }
+
         return resultado != -1;
     }
+
 
     public boolean validarUsuario(String usuario, String password) {
         SQLiteDatabase db = this.getReadableDatabase();
@@ -169,6 +207,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     public boolean actualizarUsuario(String usuario, String nombre, String email, String password, String direccion, String celular) {
+
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
 
@@ -176,34 +215,61 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put(COLUMN_EMAIL, email);
         values.put(COLUMN_DIRECCION, direccion);
         values.put(COLUMN_CELULAR, celular);
-
         if (password != null && !password.isEmpty()) {
             values.put(COLUMN_PASSWORD, password);
         }
 
-        int filasActualizadas = db.update(
-                TABLE_USERS,
-                values,
-                COLUMN_USUARIO + " = ?",
-                new String[]{usuario}
-        );
+        int filas = db.update(TABLE_USERS, values, COLUMN_USUARIO + "=?", new String[]{usuario});
 
-        return filasActualizadas > 0;
+        if (filas > 0) {
+
+            Usuario payload = new Usuario(nombre, usuario, email, password, direccion, celular, null, null, null, null);
+
+            usuarioService.actualizar(usuario, payload).enqueue(new Callback<Usuario>() {
+                @Override
+                public void onResponse(Call<Usuario> call, Response<Usuario> response) { }
+                @Override
+                public void onFailure(Call<Usuario> call, Throwable t) { }
+            });
+        }
+
+        return filas > 0;
     }
 
+
     public boolean actualizarFotoUsuario(String usuario, Bitmap bitmap) {
+
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
-        if(bitmap != null) {
+
+        byte[] bytes = null;
+        if (bitmap != null) {
             ByteArrayOutputStream stream = new ByteArrayOutputStream();
             bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
-            values.put(COLUMN_FOTO, stream.toByteArray());
+            bytes = stream.toByteArray();
+            values.put(COLUMN_FOTO, bytes);
         } else {
             values.putNull(COLUMN_FOTO);
         }
+
         int filas = db.update(TABLE_USERS, values, COLUMN_USUARIO + "=?", new String[]{usuario});
+
+        if (filas > 0 && bytes != null) {
+
+            RequestBody body = RequestBody.create(MediaType.parse("image/*"), bytes);
+            MultipartBody.Part part = MultipartBody.Part.createFormData("file", "foto.png", body);
+
+            usuarioService.subirFoto(usuario, part).enqueue(new Callback<Usuario>() {
+                @Override
+                public void onResponse(Call<Usuario> call, Response<Usuario> response) { }
+                @Override
+                public void onFailure(Call<Usuario> call, Throwable t) { }
+            });
+        }
+
         return filas > 0;
     }
+
 
     // Método para obtener Bitmap desde cursor
     public Bitmap obtenerFotoDesdeCursor(Cursor cursor) {
@@ -220,26 +286,45 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                                       String destinatario, String celularDestinatario, String direccionDestinatario,
                                       String estado, String fechaSolicitud, String fechaEntrega,
                                       double peso, double precio, String recolectorId) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues values = new ContentValues();
-        values.put(COLUMN_GUIA, guia);
-        values.put(COLUMN_REMITENTE, remitente);
-        values.put(COLUMN_USUARIO_REMITENTE, usuarioRemitente);
-        values.put(COLUMN_CELULAR_REMITENTE, celularRemitente);
-        values.put(COLUMN_DIRECCION_REMITENTE_ACTUAL, direccionRemitenteActual);
-        values.put(COLUMN_DESTINATARIO, destinatario);
-        values.put(COLUMN_CELULAR_DESTINATARIO, celularDestinatario);
-        values.put(COLUMN_DIRECCION_DESTINATARIO, direccionDestinatario);
-        values.put(COLUMN_ESTADO, estado);
-        values.put(COLUMN_FECHA_SOLICITUD, fechaSolicitud);
-        values.put(COLUMN_FECHA_ENTREGA, fechaEntrega);
-        values.put(COLUMN_PESO, peso);
-        values.put(COLUMN_PRECIO, precio);
-        values.put(COLUMN_RECOLECTOR_ID, recolectorId);
 
-        long resultado = db.insert(TABLE_ENCOMIENDAS, null, values);
-        return resultado != -1;
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues v = new ContentValues();
+        v.put(COLUMN_GUIA, guia);
+        v.put(COLUMN_REMITENTE, remitente);
+        v.put(COLUMN_USUARIO_REMITENTE, usuarioRemitente);
+        v.put(COLUMN_CELULAR_REMITENTE, celularRemitente);
+        v.put(COLUMN_DIRECCION_REMITENTE_ACTUAL, direccionRemitenteActual);
+        v.put(COLUMN_DESTINATARIO, destinatario);
+        v.put(COLUMN_CELULAR_DESTINATARIO, celularDestinatario);
+        v.put(COLUMN_DIRECCION_DESTINATARIO, direccionDestinatario);
+        v.put(COLUMN_ESTADO, estado);
+        v.put(COLUMN_FECHA_SOLICITUD, fechaSolicitud);
+        v.put(COLUMN_FECHA_ENTREGA, fechaEntrega);
+        v.put(COLUMN_PESO, peso);
+        v.put(COLUMN_PRECIO, precio);
+        v.put(COLUMN_RECOLECTOR_ID, recolectorId);
+
+        long r = db.insert(TABLE_ENCOMIENDAS, null, v);
+
+        if (r != -1) {
+
+            Encomienda e = new Encomienda(
+                    guia, remitente, usuarioRemitente, celularRemitente, direccionRemitenteActual,
+                    destinatario, celularDestinatario, direccionDestinatario,
+                    estado, fechaSolicitud, fechaEntrega, peso, precio, recolectorId,
+                    null, null
+            );
+
+            encomiendaService.crear(e).enqueue(new Callback<Encomienda>() {
+                @Override public void onResponse(Call<Encomienda> call, Response<Encomienda> response) { }
+                @Override public void onFailure(Call<Encomienda> call, Throwable t) { }
+            });
+        }
+
+        return r != -1;
     }
+
 
     public Cursor getEncomiendasPorUsuario(String usuario) {
         SQLiteDatabase db = this.getReadableDatabase();
@@ -315,48 +400,87 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     public boolean actualizarEstadoEncomienda(String guia, String nuevoEstado, Context context) {
+        // ======================
+        // 1. ACTUALIZACIÓN LOCAL
+        // ======================
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(COLUMN_ESTADO, nuevoEstado);
 
         int filas = db.update(TABLE_ENCOMIENDAS, values, COLUMN_GUIA + "=?", new String[]{guia});
 
-        if (filas > 0) {
-            String mensaje = "";
-            switch (nuevoEstado.toUpperCase()) {
-                case "SOLICITADO":
-                    mensaje = "Tu encomienda #" + guia + " ha sido solicitada correctamente.";
-                    break;
+        // Si no se actualizó en local, NO seguimos
+        if (filas <= 0) return false;
 
-                case "RECOGIDO":
-                    mensaje = "Tu encomienda #" + guia + " ha sido recogida por el mensajero.";
-                    break;
-
-                case "EN_TRANSITO":
-                    mensaje = "Tu encomienda #" + guia + " está en camino hacia el destino.";
-                    break;
-
-                case "ENTREGADO":
-                    mensaje = "Tu encomienda #" + guia + " ha sido entregada con éxito.";
-                    break;
-            }
-
-            if (!mensaje.isEmpty()) {
-                Intent serviceIntent = new Intent(context, NotificacionService.class);
-                serviceIntent.putExtra(NotificacionService.EXTRA_MENSAJE, mensaje);
-                context.startService(serviceIntent);
-            }
+        // ======================
+        // 2. NOTIFICACIÓN LOCAL
+        // ======================
+        String mensaje = "";
+        switch (nuevoEstado.toUpperCase()) {
+            case "SOLICITADO":
+                mensaje = "Tu encomienda #" + guia + " ha sido solicitada correctamente.";
+                break;
+            case "RECOGIDO":
+                mensaje = "Tu encomienda #" + guia + " ha sido recogida por el mensajero.";
+                break;
+            case "EN_TRANSITO":
+                mensaje = "Tu encomienda #" + guia + " está en camino hacia el destino.";
+                break;
+            case "ENTREGADO":
+                mensaje = "Tu encomienda #" + guia + " ha sido entregada con éxito.";
+                break;
         }
-        return filas > 0;
+
+        if (!mensaje.isEmpty()) {
+            Intent serviceIntent = new Intent(context, NotificacionService.class);
+            serviceIntent.putExtra(NotificacionService.EXTRA_MENSAJE, mensaje);
+            context.startService(serviceIntent);
+        }
+
+        // ======================
+        // 3. SINCRONIZACIÓN BACKEND
+        // ======================
+
+        encomiendaService.actualizarEstado(guia, nuevoEstado).enqueue(new Callback<Encomienda>() {
+            @Override
+            public void onResponse(Call<Encomienda> call, Response<Encomienda> response) {
+                if (!response.isSuccessful()) {
+                    Log.e("SYNC", "Falló sincronización estado backend: " + response.code());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Encomienda> call, Throwable t) {
+                Log.e("SYNC", "Error conectando con backend: " + t.getMessage());
+            }
+        });
+
+        // ======================
+        return true;
     }
 
-    public boolean guardarCalificacion(String guia, int calificacion, String comentario) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues values = new ContentValues();
-        values.put(COLUMN_CALIFICACION, calificacion);
-        values.put(COLUMN_COMENTARIO, comentario);
 
-        int filas = db.update(TABLE_ENCOMIENDAS, values, COLUMN_GUIA + "=?", new String[]{guia});
+    public boolean guardarCalificacion(String guia, int calificacion, String comentario) {
+
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues v = new ContentValues();
+        v.put(COLUMN_CALIFICACION, calificacion);
+        v.put(COLUMN_COMENTARIO, comentario);
+
+        int filas = db.update(TABLE_ENCOMIENDAS, v, COLUMN_GUIA + "=?", new String[]{guia});
+
+        if (filas > 0) {
+
+            CalificacionRequest req = new CalificacionRequest(calificacion, comentario);
+
+            encomiendaService.guardarCalificacion(guia, req)
+                    .enqueue(new Callback<Encomienda>() {
+                        @Override public void onResponse(Call<Encomienda> call, Response<Encomienda> response) { }
+                        @Override public void onFailure(Call<Encomienda> call, Throwable t) { }
+                    });
+        }
+
         return filas > 0;
     }
 
@@ -540,13 +664,74 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     // Asignar un recolector a una encomienda
     public boolean asignarRecolectorAEncomienda(String guia, String recolectorId) {
+
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(COLUMN_RECOLECTOR_ID, recolectorId);
 
         int filas = db.update(TABLE_ENCOMIENDAS, values, COLUMN_GUIA + "=?", new String[]{guia});
+
+        if (filas > 0) {
+
+            // 🔥 Sincronizar con el backend
+            encomiendaService.asignar(guia, recolectorId)
+                    .enqueue(new Callback<Encomienda>() {
+                        @Override public void onResponse(Call<Encomienda> call, Response<Encomienda> response) { }
+                        @Override public void onFailure(Call<Encomienda> call, Throwable t) { }
+                    });
+        }
+
         return filas > 0;
     }
+
+
+    public void insertOrUpdateUsuarioFromBackend(Usuario u) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+
+        values.put(COLUMN_NOMBRE, u.getNombre());
+        values.put(COLUMN_USUARIO, u.getUsuario());
+        values.put(COLUMN_EMAIL, u.getEmail());
+        values.put(COLUMN_PASSWORD, u.getPassword());
+        values.put(COLUMN_DIRECCION, u.getDireccion());
+        values.put(COLUMN_CELULAR, u.getCelular());
+        values.put(COLUMN_ROL, u.getRol());
+        values.put(COLUMN_FECHA_NACIMIENTO, u.getFechaNacimiento());
+        values.put(COLUMN_GENERO, u.getGenero());
+
+        // Foto base64
+        if (u.getFotoBase64() != null) {
+            byte[] bytes = android.util.Base64.decode(u.getFotoBase64(), android.util.Base64.DEFAULT);
+            values.put(COLUMN_FOTO, bytes);
+        }
+
+        db.insertWithOnConflict(TABLE_USERS, null, values, SQLiteDatabase.CONFLICT_REPLACE);
+    }
+
+    public void insertOrUpdateEncomiendaFromBackend(Encomienda e) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues v = new ContentValues();
+
+        v.put(COLUMN_GUIA, e.getNumeroGuia());
+        v.put(COLUMN_REMITENTE, e.getRemitente());
+        v.put(COLUMN_USUARIO_REMITENTE, e.getUsuarioRemitente());
+        v.put(COLUMN_CELULAR_REMITENTE, e.getCelularRemitente());
+        v.put(COLUMN_DIRECCION_REMITENTE_ACTUAL, e.getDireccionRemitenteActual());
+        v.put(COLUMN_DESTINATARIO, e.getDestinatario());
+        v.put(COLUMN_CELULAR_DESTINATARIO, e.getCelularDestinatario());
+        v.put(COLUMN_DIRECCION_DESTINATARIO, e.getDireccionDestinatario());
+        v.put(COLUMN_ESTADO, e.getEstado());
+        v.put(COLUMN_FECHA_SOLICITUD, e.getFechaSolicitud());
+        v.put(COLUMN_FECHA_ENTREGA, e.getFechaEntrega());
+        v.put(COLUMN_PESO, e.getPeso());
+        v.put(COLUMN_PRECIO, e.getPrecio());
+        v.put(COLUMN_RECOLECTOR_ID, e.getRecolectorId());
+        v.put(COLUMN_CALIFICACION, e.getCalificacion());
+        v.put(COLUMN_COMENTARIO, e.getComentario());
+
+        db.insertWithOnConflict(TABLE_ENCOMIENDAS, null, v, SQLiteDatabase.CONFLICT_REPLACE);
+    }
+
 
 
 }
